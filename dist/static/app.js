@@ -111,13 +111,30 @@ function updateUILanguage() {
   });
   
   // 네비게이션
+  const navTitle = document.getElementById('navTitle');
   const navNotice = document.getElementById('navNotice');
   const navLogin = document.getElementById('navLogin');
   const navSignup = document.getElementById('navSignup');
   
+  if (navTitle) navTitle.textContent = t(lang, 'nav.title');
   if (navNotice) navNotice.textContent = t(lang, 'nav.notice');
   if (navLogin) navLogin.textContent = t(lang, 'nav.login');
   if (navSignup) navSignup.textContent = t(lang, 'nav.signup');
+  
+  // 히어로 섹션
+  const heroTitle = document.getElementById('heroTitle');
+  const heroSubtitle = document.getElementById('heroSubtitle');
+  const heroDescription = document.getElementById('heroDescription');
+  const heroCtaStart = document.getElementById('heroCtaStart');
+  const heroCtaHow = document.getElementById('heroCtaHow');
+  const reassureMessage = document.getElementById('reassureMessage');
+  
+  if (heroTitle) heroTitle.textContent = t(lang, 'hero.title');
+  if (heroSubtitle) heroSubtitle.textContent = t(lang, 'hero.subtitle');
+  if (heroDescription) heroDescription.innerHTML = t(lang, 'hero.description');
+  if (heroCtaStart) heroCtaStart.innerHTML = '<i class="fas fa-rocket"></i> ' + t(lang, 'hero.ctaStart');
+  if (heroCtaHow) heroCtaHow.innerHTML = '<i class="fas fa-play-circle"></i> ' + t(lang, 'hero.ctaHow');
+  if (reassureMessage) reassureMessage.innerHTML = t(lang, 'hero.reassureMessage');
   
   // 챗봇 제목
   const chatbotTitle = document.getElementById('chatbotTitle');

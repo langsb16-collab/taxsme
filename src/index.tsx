@@ -350,22 +350,22 @@ app.get('/', (c) => {
             
             <!-- 히어로 섹션 -->
             <div class="text-center animate-fade-in" style="margin-bottom: 48px;">
-                <h1 style="font-size: 3.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 24px; color: var(--midnight-navy);">
+                <h1 id="heroTitle" style="font-size: 3.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 24px; color: var(--midnight-navy);">
                     사진(Snap)으로 해결하는 세금
                 </h1>
-                <p style="font-size: 1.5rem; color: var(--text-secondary); margin-bottom: 16px;">
+                <p id="heroSubtitle" style="font-size: 1.5rem; color: var(--text-secondary); margin-bottom: 16px;">
                     카메라 렌즈로 끝나는 신고
                 </p>
-                <p style="font-size: 1.125rem; color: var(--text-tertiary); margin-bottom: 32px;">
+                <p id="heroDescription" style="font-size: 1.125rem; color: var(--text-tertiary); margin-bottom: 32px;">
                     영수증 없어도 괜찮습니다<br>
                     통장 캡처로 경비 처리
                 </p>
                 <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
-                    <button onclick="scrollToSection('modes')" class="btn btn-primary" style="font-size: 1.125rem; padding: 16px 32px;">
+                    <button id="heroCtaStart" onclick="scrollToSection('modes')" class="btn btn-primary" style="font-size: 1.125rem; padding: 16px 32px;">
                         <i class="fas fa-rocket"></i>
                         지금 시작하기
                     </button>
-                    <button class="btn btn-outline" style="font-size: 1.125rem; padding: 16px 32px;">
+                    <button id="heroCtaHow" class="btn btn-outline" style="font-size: 1.125rem; padding: 16px 32px;">
                         <i class="fas fa-play-circle"></i>
                         어떻게 작동하나요?
                     </button>
@@ -375,7 +375,7 @@ app.get('/', (c) => {
             <!-- 안심 메시지 배너 -->
             <div class="message-box message-reassure animate-slide-up" style="font-size: 1.125rem; text-align: center;">
                 <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
-                <span style="font-size: 0.875rem; line-height: 1.5;">
+                <span id="reassureMessage" style="font-size: 0.875rem; line-height: 1.5;">
                     사진만 있으면 시작할 수 있어요.<br>
                     정식 장부가 없어도 출발할 수 있어야 진짜 초보자를 위한 서비스죠.
                 </span>

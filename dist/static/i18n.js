@@ -10,6 +10,7 @@ const translations = {
     
     // 네비게이션
     nav: {
+      title: '세무신고 플랫폼',
       notice: '공지',
       login: '로그인',
       signup: '회원가입',
@@ -18,11 +19,12 @@ const translations = {
     
     // 히어로 섹션
     hero: {
-      title: '세금 때문에 멈추지 마세요',
-      subtitle: '일하느라 바쁜 당신 대신, 신고는 우리가 합니다',
-      features: '영수증 없어도 괜찮습니다 • 통장 캡처로 경비 처리 • 건당 1,900원 전문가 검토',
-      startButton: '지금 시작하기',
-      howItWorks: '어떻게 작동하나요?'
+      title: '사진(Snap)으로 해결하는 세금',
+      subtitle: '카메라 렌즈로 끝나는 신고',
+      description: '영수증 없어도 괜찮습니다<br>통장 캡처로 경비 처리',
+      ctaStart: '지금 시작하기',
+      ctaHow: '어떻게 작동하나요?',
+      reassureMessage: '사진만 있으면 시작할 수 있어요.<br>정식 장부가 없어도 출발할 수 있어야 진짜 초보자를 위한 서비스죠.'
     },
     
     // 안심 메시지
@@ -194,6 +196,7 @@ const translations = {
     languageCode: 'en',
     
     nav: {
+      title: 'Tax Filing Platform',
       notice: 'Notice',
       login: 'Login',
       signup: 'Sign Up',
@@ -201,11 +204,12 @@ const translations = {
     },
     
     hero: {
-      title: "Don't Stop Because of Taxes",
-      subtitle: 'We handle filing while you focus on work',
-      features: 'No receipt needed • Bank capture for expenses • $2 expert review per item',
-      startButton: 'Get Started',
-      howItWorks: 'How It Works?'
+      title: 'Taxes Solved by Photos (Snap)',
+      subtitle: 'Filing Done Through Camera Lens',
+      description: 'No receipts needed<br>Expenses from bank captures',
+      ctaStart: 'Get Started',
+      ctaHow: 'How It Works?',
+      reassureMessage: 'All you need is a photo to start.<br>A real beginner-friendly service should work without formal bookkeeping.'
     },
     
     reassurance: {
