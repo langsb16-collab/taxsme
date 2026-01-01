@@ -1,170 +1,820 @@
-// 전역 상태
+// ==================== 전역 상태 관리 ====================
 let currentLang = 'ko';
 let expenses = [];
 let faqData = [];
 let bankTransactions = [];
 let galleryImages = [];
-let selectedBankItems = [];
+let selectedBankItems = new Set();
+let currentMode = null;
 
-// 모드 전환 함수
+// ==================== 유틸리티 함수 ====================
+
+// 토스트 메시지 표시
+function showToast(message, duration = 3000) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+// 숫자 포맷팅 (금액용 - Mono 폰트)
+function formatAmount(amount) {
+  return `<span class="amount">${amount.toLocaleString('ko-KR')}원</span>`;
+}
+
+// 위험도 배지 생성
+function createRiskBadge(level) {
+  const badges = {
+    low: { text: '안전', icon: 'check-circle', class: 'risk-low' },
+    mid: { text: '검토', icon: 'exclamation-triangle', class: 'risk-mid' },
+    high: { text: '주의', icon: 'exclamation-circle', class: 'risk-high' }
+  };
+  
+  const badge = badges[level] || badges.low;
+  return `
+    <span class="risk-badge ${badge.class}">
+      <i class="fas fa-${badge.icon}"></i>
+      ${badge.text}
+    </span>
+  `;
+}
+
+// 스크롤 헬퍼
+function scrollToElement(elementId) {
+  const element = document.getElementById(elementId);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+// ==================== 모드 전환 함수 ====================
+
 window.switchMode = function(mode) {
   // 모든 섹션 숨기기
-  document.getElementById('receiptSection').classList.add('hidden');
-  document.getElementById('bankCaptureSection').classList.add('hidden');
-  document.getElementById('gallerySection').classList.add('hidden');
+  ['receiptSection', 'bankSection', 'gallerySection'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
   
-  // 선택된 섹션만 표시
-  if (mode === 'receipt') {
-    document.getElementById('receiptSection').classList.remove('hidden');
-  } else if (mode === 'bank') {
-    document.getElementById('bankCaptureSection').classList.remove('hidden');
-  } else if (mode === 'gallery') {
-    document.getElementById('gallerySection').classList.remove('hidden');
+  // 선택된 모드 표시
+  const sectionMap = {
+    receipt: 'receiptSection',
+    bank: 'bankSection',
+    gallery: 'gallerySection'
+  };
+  
+  const sectionId = sectionMap[mode];
+  if (sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.classList.remove('hidden');
+      section.classList.add('active');
+      setTimeout(() => scrollToElement(sectionId), 200);
+    }
   }
   
-  // 섹션으로 스크롤
-  setTimeout(() => {
-    const section = document.getElementById(mode === 'receipt' ? 'receiptSection' : mode === 'bank' ? 'bankCaptureSection' : 'gallerySection');
-    section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 100);
+  currentMode = mode;
+  showToast(`${mode === 'receipt' ? '영수증 촬영' : mode === 'bank' ? '통장 캡처' : '갤러리 업로드'} 모드로 전환되었습니다`);
 };
 
-// 언어별 텍스트
-const i18n = {
-  ko: {
-    searchPlaceholder: '검색...',
-    noResults: '검색 결과가 없습니다',
-    loading: '로딩 중...'
-  },
-  en: {
-    searchPlaceholder: 'Search...',
-    noResults: 'No results found',
-    loading: 'Loading...'
-  },
-  zh: {
-    searchPlaceholder: '搜索...',
-    noResults: '未找到结果',
-    loading: '加载中...'
-  },
-  ja: {
-    searchPlaceholder: '検索...',
-    noResults: '検索結果がありません',
-    loading: '読み込み中...'
-  },
-  de: {
-    searchPlaceholder: 'Suchen...',
-    noResults: 'Keine Ergebnisse gefunden',
-    loading: 'Wird geladen...'
-  },
-  es: {
-    searchPlaceholder: 'Buscar...',
-    noResults: 'No se encontraron resultados',
-    loading: 'Cargando...'
+// ==================== 영수증 촬영 모드 ====================
+
+// 영수증 입력 이벤트
+if (document.getElementById('receiptInput')) {
+  document.getElementById('receiptInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const previewArea = document.getElementById('receiptPreviewArea');
+      const previewImage = document.getElementById('receiptPreviewImage');
+      const analyzeBtn = document.getElementById('analyzeReceiptBtn');
+      
+      if (previewImage) {
+        previewImage.src = event.target.result;
+        previewArea.classList.remove('hidden');
+        analyzeBtn.disabled = false;
+      }
+      
+      showToast('영수증 이미지가 로드되었습니다');
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// 영수증 분석 버튼
+if (document.getElementById('analyzeReceiptBtn')) {
+  document.getElementById('analyzeReceiptBtn').addEventListener('click', async function() {
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 분석 중...';
+    
+    try {
+      const response = await fetch('/api/ocr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: 'placeholder' })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        displayReceiptResult(result.data);
+        showToast('✅ 영수증 분석 완료!');
+      } else {
+        showToast('❌ 분석에 실패했습니다');
+      }
+    } catch (error) {
+      showToast('❌ 오류가 발생했습니다');
+      console.error(error);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-magic"></i> 분석 시작';
+    }
+  });
+}
+
+// 영수증 결과 표시
+function displayReceiptResult(data) {
+  const resultsDiv = document.getElementById('receiptResults');
+  const dataDiv = document.getElementById('receiptData');
+  
+  if (!resultsDiv || !dataDiv) return;
+  
+  dataDiv.innerHTML = `
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="padding: 12px; background: var(--soft-fog); border-radius: 8px;">
+        <div style="font-size: 0.875rem; color: var(--text-tertiary); margin-bottom: 4px;">일자</div>
+        <div style="font-size: 1.125rem; font-weight: 600;">${data.date}</div>
+      </div>
+      
+      <div style="padding: 12px; background: var(--soft-fog); border-radius: 8px;">
+        <div style="font-size: 0.875rem; color: var(--text-tertiary); margin-bottom: 4px;">금액</div>
+        <div style="font-size: 1.5rem; font-weight: 700; font-family: var(--font-mono); color: var(--clear-mint);">
+          ${data.amount.toLocaleString()}원
+        </div>
+      </div>
+      
+      <div style="padding: 12px; background: var(--soft-fog); border-radius: 8px;">
+        <div style="font-size: 0.875rem; color: var(--text-tertiary); margin-bottom: 4px;">업체명</div>
+        <div style="font-size: 1.125rem; font-weight: 600;">${data.vendor}</div>
+      </div>
+      
+      <div style="padding: 12px; background: var(--soft-fog); border-radius: 8px;">
+        <div style="font-size: 0.875rem; color: var(--text-tertiary); margin-bottom: 4px;">카테고리</div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 1rem; font-weight: 600;">${data.category}</span>
+          ${createRiskBadge(data.risk_level)}
+        </div>
+      </div>
+      
+      <div style="padding: 12px; background: #E8F5F1; border-radius: 8px; border-left: 4px solid var(--clear-mint);">
+        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+          <i class="fas fa-check-circle" style="color: var(--clear-mint);"></i>
+          인식 신뢰도: ${Math.round(data.confidence * 100)}%
+        </div>
+      </div>
+    </div>
+  `;
+  
+  resultsDiv.classList.remove('hidden');
+  
+  // 데이터 저장
+  window.currentReceiptData = data;
+}
+
+// 영수증 경비 추가
+if (document.getElementById('addReceiptBtn')) {
+  document.getElementById('addReceiptBtn').addEventListener('click', function() {
+    if (window.currentReceiptData) {
+      addExpenseToList(window.currentReceiptData, 'receipt');
+      showToast('✅ 경비 목록에 추가되었습니다');
+      
+      // 경비 섹션으로 스크롤
+      setTimeout(() => scrollToElement('expenseSection'), 500);
+    }
+  });
+}
+
+// ==================== 통장 캡처 모드 ====================
+
+// 통장 입력 이벤트
+if (document.getElementById('bankInput')) {
+  document.getElementById('bankInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const previewArea = document.getElementById('bankPreviewArea');
+      const previewImage = document.getElementById('bankPreviewImage');
+      
+      if (previewImage && previewArea) {
+        previewImage.src = event.target.result;
+        previewArea.classList.remove('hidden');
+      }
+      
+      showToast('통장 화면이 로드되었습니다');
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// 통장 분석 버튼
+if (document.getElementById('analyzeBankBtn')) {
+  document.getElementById('analyzeBankBtn').addEventListener('click', async function() {
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 거래내역 분석 중...';
+    
+    try {
+      const response = await fetch('/api/bank-capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: 'placeholder' })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        bankTransactions = result.data.transactions;
+        displayBankTransactions(result.data.transactions);
+        showToast(`✅ ${result.data.transactions.length}건의 거래내역이 인식되었습니다`);
+      } else {
+        showToast('❌ 분석에 실패했습니다');
+      }
+    } catch (error) {
+      showToast('❌ 오류가 발생했습니다');
+      console.error(error);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-magic"></i> 거래내역 분석 시작';
+    }
+  });
+}
+
+// 통장 거래내역 표시
+function displayBankTransactions(transactions) {
+  const resultsDiv = document.getElementById('bankResults');
+  const transactionsDiv = document.getElementById('bankTransactions');
+  
+  if (!resultsDiv || !transactionsDiv) return;
+  
+  selectedBankItems.clear();
+  transactions.forEach(tx => {
+    if (tx.selected) selectedBankItems.add(tx.id);
+  });
+  
+  transactionsDiv.innerHTML = transactions.map(tx => `
+    <div class="card" style="margin-bottom: 12px; padding: 16px; cursor: pointer; border: 2px solid ${selectedBankItems.has(tx.id) ? 'var(--clear-mint)' : 'transparent'}; transition: all 0.2s;" 
+         onclick="toggleBankTransaction('${tx.id}')">
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div>
+          <div style="font-size: 0.875rem; color: var(--text-tertiary);">${tx.date}</div>
+          <div style="font-size: 1.125rem; font-weight: 600; margin-top: 4px;">${tx.merchant}</div>
+        </div>
+        <div style="text-align: right;">
+          <div class="amount" style="font-size: 1.25rem; font-weight: 700; color: var(--coral-trust);">
+            -${tx.amount.toLocaleString()}원
+          </div>
+          ${createRiskBadge(tx.risk_level)}
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <span style="padding: 4px 12px; background: var(--soft-fog); border-radius: 16px; font-size: 0.875rem;">
+          ${tx.category}
+        </span>
+        <span style="padding: 4px 12px; background: ${tx.label === '사업추정' ? '#E8F5F1' : tx.label === '검토필요' ? '#FFF4E6' : '#F4F4F4'}; 
+                     color: ${tx.label === '사업추정' ? 'var(--clear-mint)' : tx.label === '검토필요' ? 'var(--amber-audit)' : 'var(--text-secondary)'}; 
+                     border-radius: 16px; font-size: 0.875rem; font-weight: 600;">
+          ${tx.label}
+        </span>
+        ${tx.label === '검토필요' ? `
+          <button class="btn-ghost" style="padding: 4px 12px; font-size: 0.875rem; margin-left: auto;" onclick="event.stopPropagation(); requestSpotReview('${tx.id}')">
+            <i class="fas fa-user-tie"></i>
+            1,900원 검토받기
+          </button>
+        ` : ''}
+      </div>
+      
+      ${selectedBankItems.has(tx.id) ? `
+        <div style="margin-top: 12px; padding: 12px; background: #E8F5F1; border-radius: 8px; border-left: 4px solid var(--clear-mint);">
+          <i class="fas fa-check-circle" style="color: var(--clear-mint);"></i>
+          <span style="font-size: 0.875rem; color: var(--deep-green);">경비로 추가됩니다</span>
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+  
+  resultsDiv.classList.remove('hidden');
+}
+
+// 통장 거래내역 선택 토글
+window.toggleBankTransaction = function(txId) {
+  if (selectedBankItems.has(txId)) {
+    selectedBankItems.delete(txId);
+  } else {
+    selectedBankItems.add(txId);
+  }
+  
+  displayBankTransactions(bankTransactions);
+};
+
+// Spot Review 요청 (건당 검토)
+window.requestSpotReview = async function(txId) {
+  const confirmed = confirm('이 거래내역을 세무 전문가에게 검토 요청하시겠습니까?\n비용: 1,900원');
+  
+  if (confirmed) {
+    showToast('🔍 전문가 검토가 요청되었습니다. 24시간 내 답변 예정입니다.');
+    
+    try {
+      await fetch('/api/spot-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transaction_id: txId, amount: 1900 })
+      });
+    } catch (error) {
+      console.error('Spot Review 요청 실패:', error);
+    }
   }
 };
 
-// DOM 요소
-const chatbotIcon = document.getElementById('chatbotIcon');
-const chatbotWindow = document.getElementById('chatbotWindow');
-const closeChatbot = document.getElementById('closeChatbot');
-const receiptInput = document.getElementById('receiptInput');
-const previewArea = document.getElementById('previewArea');
-const previewImage = document.getElementById('previewImage');
-const analyzeBtn = document.getElementById('analyzeBtn');
-const ocrResults = document.getElementById('ocrResults');
-const ocrData = document.getElementById('ocrData');
-const addExpenseBtn = document.getElementById('addExpenseBtn');
+// 통장 거래내역 경비 추가
+if (document.getElementById('addBankBtn')) {
+  document.getElementById('addBankBtn').addEventListener('click', function() {
+    let addedCount = 0;
+    
+    bankTransactions.forEach(tx => {
+      if (selectedBankItems.has(tx.id)) {
+        addExpenseToList({
+          date: tx.date,
+          amount: tx.amount,
+          vendor: tx.merchant,
+          category: tx.category,
+          risk_level: tx.risk_level,
+          source_type: 'bank',
+          confidence: tx.confidence
+        }, 'bank');
+        addedCount++;
+      }
+    });
+    
+    if (addedCount > 0) {
+      showToast(`✅ ${addedCount}건의 거래내역이 경비로 추가되었습니다`);
+      setTimeout(() => scrollToElement('expenseSection'), 500);
+    } else {
+      showToast('선택된 항목이 없습니다');
+    }
+  });
+}
 
-// 통장 캡처 DOM 요소
-const bankInput = document.getElementById('bankInput');
-const bankPreviewArea = document.getElementById('bankPreviewArea');
-const bankPreviewImage = document.getElementById('bankPreviewImage');
-const analyzeBankBtn = document.getElementById('analyzeBankBtn');
-const bankResults = document.getElementById('bankResults');
-const bankTransactionsEl = document.getElementById('bankTransactions');
-const addBankExpensesBtn = document.getElementById('addBankExpensesBtn');
+// ==================== 갤러리 일괄 업로드 ====================
 
-// 갤러리 DOM 요소
-const galleryInput = document.getElementById('galleryInput');
-const galleryFileCount = document.getElementById('galleryFileCount');
-const galleryResults = document.getElementById('galleryResults');
-const galleryGrid = document.getElementById('galleryGrid');
-const galleryCount = document.getElementById('galleryCount');
-const processGalleryBtn = document.getElementById('processGalleryBtn');
-const galleryProcessedResults = document.getElementById('galleryProcessedResults');
-const addGalleryExpensesBtn = document.getElementById('addGalleryExpensesBtn');
-const expenseList = document.getElementById('expenseList');
-const calculateBtn = document.getElementById('calculateBtn');
-const taxResult = document.getElementById('taxResult');
-const taxSummary = document.getElementById('taxSummary');
-const faqSearch = document.getElementById('faqSearch');
-const faqItems = document.getElementById('faqItems');
-const langBtns = document.querySelectorAll('.lang-btn');
+// 갤러리 입력 이벤트
+if (document.getElementById('galleryInput')) {
+  document.getElementById('galleryInput').addEventListener('change', function(e) {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    
+    if (files.length > 20) {
+      showToast('⚠️ 최대 20장까지 업로드 가능합니다');
+      return;
+    }
+    
+    galleryImages = files;
+    displayGalleryFiles(files);
+    
+    const fileCountDiv = document.getElementById('galleryFileCount');
+    const resultsDiv = document.getElementById('galleryResults');
+    const countSpan = document.getElementById('galleryCount');
+    
+    if (fileCountDiv && resultsDiv && countSpan) {
+      fileCountDiv.textContent = `${files.length}개 파일 선택됨`;
+      fileCountDiv.classList.remove('hidden');
+      resultsDiv.classList.remove('hidden');
+      countSpan.textContent = files.length;
+    }
+    
+    showToast(`${files.length}개 파일이 선택되었습니다`);
+  });
+}
+
+// 갤러리 파일 표시
+function displayGalleryFiles(files) {
+  const gridDiv = document.getElementById('galleryGrid');
+  if (!gridDiv) return;
+  
+  gridDiv.innerHTML = '';
+  
+  files.forEach((file, index) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const imgContainer = document.createElement('div');
+      imgContainer.style.cssText = 'position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 1; border: 2px solid var(--soft-fog);';
+      
+      imgContainer.innerHTML = `
+        <img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">
+        <div style="position: absolute; top: 4px; right: 4px; background: var(--clear-mint); color: white; 
+                    width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; 
+                    justify-content: center; font-size: 0.75rem; font-weight: 600;">
+          ${index + 1}
+        </div>
+      `;
+      
+      gridDiv.appendChild(imgContainer);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// 갤러리 일괄 분석
+if (document.getElementById('processGalleryBtn')) {
+  document.getElementById('processGalleryBtn').addEventListener('click', async function() {
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 분석 중...';
+    
+    try {
+      const response = await fetch('/api/gallery-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          file_count: galleryImages.length,
+          files: galleryImages.map((f, i) => `file_${i}`)
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        displayGalleryResults(result.data.receipts);
+        showToast(`✅ ${result.data.receipts.length}건의 영수증이 인식되었습니다`);
+      } else {
+        showToast('❌ 분석에 실패했습니다');
+      }
+    } catch (error) {
+      showToast('❌ 오류가 발생했습니다');
+      console.error(error);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-magic"></i> 일괄 분석 시작';
+    }
+  });
+}
+
+// 갤러리 분석 결과 표시
+function displayGalleryResults(receipts) {
+  const resultsDiv = document.getElementById('galleryProcessedResults');
+  const addBtn = document.getElementById('addGalleryBtn');
+  
+  if (!resultsDiv || !addBtn) return;
+  
+  resultsDiv.innerHTML = `
+    <h3 style="margin-bottom: 16px;">
+      <i class="fas fa-check-circle" style="color: var(--clear-mint);"></i>
+      분석 완료 (${receipts.length}건)
+    </h3>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      ${receipts.map((receipt, index) => `
+        <div class="card-fog" style="padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.875rem; color: var(--text-tertiary);">#${index + 1} · ${receipt.date}</div>
+              <div style="font-size: 1.125rem; font-weight: 600; margin-top: 4px;">${receipt.vendor}</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="amount" style="font-size: 1.25rem; font-weight: 700; color: var(--clear-mint);">
+                ${receipt.amount.toLocaleString()}원
+              </div>
+              ${createRiskBadge(receipt.risk_level)}
+            </div>
+          </div>
+          <div style="margin-top: 8px; font-size: 0.875rem; color: var(--text-secondary);">
+            <span style="padding: 4px 12px; background: white; border-radius: 16px;">${receipt.category}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  
+  resultsDiv.classList.remove('hidden');
+  addBtn.classList.remove('hidden');
+  
+  // 데이터 저장
+  window.currentGalleryReceipts = receipts;
+}
+
+// 갤러리 경비 추가
+if (document.getElementById('addGalleryBtn')) {
+  document.getElementById('addGalleryBtn').addEventListener('click', function() {
+    if (window.currentGalleryReceipts) {
+      window.currentGalleryReceipts.forEach(receipt => {
+        addExpenseToList(receipt, 'gallery');
+      });
+      
+      showToast(`✅ ${window.currentGalleryReceipts.length}건의 영수증이 경비로 추가되었습니다`);
+      setTimeout(() => scrollToElement('expenseSection'), 500);
+    }
+  });
+}
+
+// ==================== 경비 목록 관리 ====================
+
+// 경비 추가
+function addExpenseToList(data, source) {
+  const expense = {
+    id: `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    date: data.date,
+    amount: data.amount,
+    vendor: data.vendor,
+    category: data.category || '미분류',
+    risk_level: data.risk_level || 'low',
+    source_type: source,
+    confidence: data.confidence || 0.9,
+    timestamp: new Date().toISOString()
+  };
+  
+  expenses.push(expense);
+  updateExpenseList();
+  updateTaxSummary();
+}
+
+// 경비 목록 업데이트
+function updateExpenseList() {
+  const listDiv = document.getElementById('expenseList');
+  if (!listDiv) return;
+  
+  if (expenses.length === 0) {
+    listDiv.innerHTML = `
+      <div style="text-align: center; padding: 48px; color: var(--text-tertiary);">
+        <i class="fas fa-inbox" style="font-size: 64px; margin-bottom: 16px; opacity: 0.3;"></i>
+        <p>아직 추가된 경비가 없습니다</p>
+        <p style="font-size: 0.875rem; margin-top: 8px;">위에서 영수증을 촬영하거나 통장을 캡처하세요</p>
+      </div>
+    `;
+    return;
+  }
+  
+  listDiv.innerHTML = expenses.map(exp => `
+    <div class="card" style="margin-bottom: 12px; padding: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+        <div style="flex: 1;">
+          <div style="font-size: 0.875rem; color: var(--text-tertiary); margin-bottom: 4px;">
+            ${exp.date} · ${exp.source_type === 'receipt' ? '영수증' : exp.source_type === 'bank' ? '통장' : '갤러리'}
+          </div>
+          <div style="font-size: 1.125rem; font-weight: 600;">${exp.vendor}</div>
+          <div style="margin-top: 8px;">
+            <span style="padding: 4px 12px; background: var(--soft-fog); border-radius: 16px; font-size: 0.875rem;">
+              ${exp.category}
+            </span>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div class="amount" style="font-size: 1.5rem; font-weight: 700; color: var(--clear-mint); margin-bottom: 8px;">
+            ${exp.amount.toLocaleString()}원
+          </div>
+          ${createRiskBadge(exp.risk_level)}
+        </div>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--soft-fog);">
+        <div style="font-size: 0.875rem; color: var(--text-tertiary);">
+          <i class="fas fa-check-circle"></i>
+          신뢰도 ${Math.round(exp.confidence * 100)}%
+        </div>
+        <button class="btn-ghost" style="padding: 6px 12px; font-size: 0.875rem;" onclick="removeExpense('${exp.id}')">
+          <i class="fas fa-trash"></i>
+          삭제
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// 경비 삭제
+window.removeExpense = function(expenseId) {
+  expenses = expenses.filter(exp => exp.id !== expenseId);
+  updateExpenseList();
+  updateTaxSummary();
+  showToast('경비 항목이 삭제되었습니다');
+};
+
+// 세금 요약 업데이트
+function updateTaxSummary() {
+  const summaryDiv = document.getElementById('taxSummary');
+  if (!summaryDiv) return;
+  
+  const totalAmount = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const deductible = Math.floor(totalAmount * 0.8);
+  const refund = Math.floor(totalAmount * 0.05);
+  
+  const highRisk = expenses.filter(e => e.risk_level === 'high').length;
+  const midRisk = expenses.filter(e => e.risk_level === 'mid').length;
+  const lowRisk = expenses.filter(e => e.risk_level === 'low').length;
+  
+  summaryDiv.innerHTML = `
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+      <div style="text-align: center; padding: 24px; background: white; border-radius: 12px;">
+        <div style="font-size: 0.875rem; color: var(--text-tertiary); margin-bottom: 8px;">총 경비</div>
+        <div class="amount" style="font-size: 2rem; font-weight: 700; color: var(--midnight-navy);">
+          ${totalAmount.toLocaleString()}원
+        </div>
+      </div>
+      
+      <div style="text-align: center; padding: 24px; background: white; border-radius: 12px;">
+        <div style="font-size: 0.875rem; color: var(--text-tertiary); margin-bottom: 8px;">공제 가능액</div>
+        <div class="amount" style="font-size: 2rem; font-weight: 700; color: var(--clear-mint);">
+          ${deductible.toLocaleString()}원
+        </div>
+      </div>
+      
+      <div style="text-align: center; padding: 24px; background: white; border-radius: 12px;">
+        <div style="font-size: 0.875rem; color: var(--text-tertiary); margin-bottom: 8px;">예상 환급</div>
+        <div class="amount" style="font-size: 2rem; font-weight: 700; color: var(--amber-audit);">
+          ${refund.toLocaleString()}원
+        </div>
+      </div>
+    </div>
+    
+    <div style="margin-top: 24px; padding: 16px; background: var(--soft-fog); border-radius: 12px;">
+      <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 12px; font-weight: 600;">
+        <i class="fas fa-shield-alt"></i>
+        위험도 분석
+      </div>
+      <div style="display: flex; gap: 16px;">
+        <div style="flex: 1; text-align: center;">
+          ${createRiskBadge('low')}
+          <div class="amount" style="font-size: 1.25rem; margin-top: 8px;">${lowRisk}건</div>
+        </div>
+        <div style="flex: 1; text-align: center;">
+          ${createRiskBadge('mid')}
+          <div class="amount" style="font-size: 1.25rem; margin-top: 8px;">${midRisk}건</div>
+        </div>
+        <div style="flex: 1; text-align: center;">
+          ${createRiskBadge('high')}
+          <div class="amount" style="font-size: 1.25rem; margin-top: 8px;">${highRisk}건</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// 세금 계산 버튼
+if (document.getElementById('calculateBtn')) {
+  document.getElementById('calculateBtn').addEventListener('click', async function() {
+    if (expenses.length === 0) {
+      showToast('⚠️ 경비 항목을 추가해주세요');
+      return;
+    }
+    
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 계산 중...';
+    
+    try {
+      const response = await fetch('/api/calculate-tax', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expenses })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        displayTaxResult(result.data);
+        showToast('✅ 세금 계산이 완료되었습니다');
+      } else {
+        showToast('❌ 계산에 실패했습니다');
+      }
+    } catch (error) {
+      showToast('❌ 오류가 발생했습니다');
+      console.error(error);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-calculator"></i> 세금 계산하기';
+    }
+  });
+}
+
+// 세금 계산 결과 표시
+function displayTaxResult(data) {
+  const resultDiv = document.getElementById('taxResult');
+  if (!resultDiv) return;
+  
+  resultDiv.innerHTML = `
+    <div class="card" style="background: var(--midnight-navy); color: white; padding: 32px;">
+      <h2 style="text-align: center; margin-bottom: 32px; color: white;">
+        <i class="fas fa-file-invoice-dollar"></i>
+        세금 계산 결과
+      </h2>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 32px;">
+        <div style="text-align: center; padding: 24px; background: rgba(255,255,255,0.1); border-radius: 12px;">
+          <div style="font-size: 0.875rem; opacity: 0.8; margin-bottom: 8px;">총 경비</div>
+          <div class="amount" style="font-size: 2rem; font-weight: 700;">
+            ${data.totalExpense.toLocaleString()}원
+          </div>
+        </div>
+        
+        <div style="text-align: center; padding: 24px; background: rgba(37, 194, 160, 0.2); border-radius: 12px;">
+          <div style="font-size: 0.875rem; opacity: 0.8; margin-bottom: 8px;">공제 가능액</div>
+          <div class="amount" style="font-size: 2rem; font-weight: 700; color: var(--clear-mint);">
+            ${data.deductible.toLocaleString()}원
+          </div>
+        </div>
+        
+        <div style="text-align: center; padding: 24px; background: rgba(248, 161, 15, 0.2); border-radius: 12px;">
+          <div style="font-size: 0.875rem; opacity: 0.8; margin-bottom: 8px;">예상 환급</div>
+          <div class="amount" style="font-size: 2rem; font-weight: 700; color: var(--amber-audit);">
+            ${data.refundEstimate.toLocaleString()}원
+          </div>
+        </div>
+      </div>
+      
+      <div class="message-box message-reassure">
+        <p style="font-size: 1rem; color: var(--deep-green);">
+          <i class="fas fa-check-circle"></i>
+          ${data.summary}
+        </p>
+      </div>
+      
+      <div style="display: flex; gap: 16px; margin-top: 24px;">
+        <button class="btn btn-primary" style="flex: 1; background: var(--clear-mint);">
+          <i class="fas fa-paper-plane"></i>
+          신고서 제출하기
+        </button>
+        <button class="btn btn-outline" style="flex: 1; border-color: white; color: white;">
+          <i class="fas fa-download"></i>
+          PDF 다운로드
+        </button>
+      </div>
+    </div>
+  `;
+  
+  resultDiv.classList.remove('hidden');
+  scrollToElement('taxResult');
+}
+
+// ==================== 챗봇 FAQ ====================
 
 // 챗봇 토글
-chatbotIcon.addEventListener('click', () => {
-  chatbotWindow.classList.toggle('hidden');
-  if (!chatbotWindow.classList.contains('hidden')) {
-    loadFAQ(currentLang);
-  }
-});
-
-closeChatbot.addEventListener('click', () => {
-  chatbotWindow.classList.add('hidden');
-});
-
-// 언어 변경
-langBtns.forEach(btn => {
-  btn.addEventListener('click', async () => {
-    const lang = btn.getAttribute('data-lang');
-    currentLang = lang;
-    
-    // 언어 버튼 활성화 상태 변경
-    langBtns.forEach(b => b.classList.remove('opacity-100'));
-    langBtns.forEach(b => b.classList.add('opacity-60'));
-    btn.classList.remove('opacity-60');
-    btn.classList.add('opacity-100', 'scale-110');
-    
-    // FAQ 데이터 다시 로드
-    await loadFAQ(lang);
-    
-    // 검색창 placeholder 변경
-    faqSearch.placeholder = i18n[lang].searchPlaceholder;
+if (document.getElementById('chatbotIcon')) {
+  document.getElementById('chatbotIcon').addEventListener('click', function() {
+    const chatbotWindow = document.getElementById('chatbotWindow');
+    if (chatbotWindow) {
+      chatbotWindow.classList.toggle('hidden');
+      
+      if (!chatbotWindow.classList.contains('hidden')) {
+        loadFAQ(currentLang);
+      }
+    }
   });
-});
+}
+
+if (document.getElementById('closeChatbot')) {
+  document.getElementById('closeChatbot').addEventListener('click', function() {
+    const chatbotWindow = document.getElementById('chatbotWindow');
+    if (chatbotWindow) {
+      chatbotWindow.classList.add('hidden');
+    }
+  });
+}
 
 // FAQ 로드
-async function loadFAQ(lang) {
+async function loadFAQ(lang = 'ko') {
   try {
-    faqItems.innerHTML = `<p class="text-gray-500 text-center py-4">${i18n[lang].loading}</p>`;
-    
     const response = await fetch(`/api/faq/${lang}`);
     const result = await response.json();
     
     if (result.success) {
       faqData = result.data;
-      renderFAQ(faqData);
+      displayFAQ(faqData);
     }
   } catch (error) {
-    console.error('FAQ 로드 오류:', error);
-    faqItems.innerHTML = '<p class="text-red-500 text-center py-4">오류가 발생했습니다</p>';
+    console.error('FAQ 로드 실패:', error);
   }
 }
 
-// FAQ 렌더링
-function renderFAQ(data) {
-  if (data.length === 0) {
-    faqItems.innerHTML = `<p class="text-gray-500 text-center py-4">${i18n[currentLang].noResults}</p>`;
-    return;
-  }
+// FAQ 표시
+function displayFAQ(faqs) {
+  const faqList = document.getElementById('faqList');
+  if (!faqList) return;
   
-  faqItems.innerHTML = data.map(faq => `
-    <div class="faq-item bg-white rounded-lg shadow-sm hover:shadow-md transition">
-      <button class="faq-question w-full text-left px-4 py-3 font-semibold text-gray-800 hover:text-purple-600 transition flex justify-between items-center" onclick="toggleFAQ(${faq.id})">
+  faqList.innerHTML = faqs.map(faq => `
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFAQ(${faq.id})">
         <span>${faq.question}</span>
-        <i class="fas fa-chevron-down transition-transform" id="icon-${faq.id}"></i>
-      </button>
-      <div class="faq-answer hidden px-4 py-3 text-gray-600 border-t border-gray-100" id="answer-${faq.id}">
+        <i class="fas fa-chevron-down" id="faq-icon-${faq.id}"></i>
+      </div>
+      <div class="faq-answer hidden" id="faq-answer-${faq.id}">
         ${faq.answer}
       </div>
     </div>
@@ -172,485 +822,50 @@ function renderFAQ(data) {
 }
 
 // FAQ 토글
-window.toggleFAQ = function(id) {
-  const answer = document.getElementById(`answer-${id}`);
-  const icon = document.getElementById(`icon-${id}`);
+window.toggleFAQ = function(faqId) {
+  const answer = document.getElementById(`faq-answer-${faqId}`);
+  const icon = document.getElementById(`faq-icon-${faqId}`);
   
-  answer.classList.toggle('hidden');
-  icon.classList.toggle('rotate-180');
+  if (answer && icon) {
+    answer.classList.toggle('hidden');
+    icon.style.transform = answer.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
 };
 
 // FAQ 검색
-faqSearch.addEventListener('input', (e) => {
-  const query = e.target.value.toLowerCase();
-  const filtered = faqData.filter(faq => 
-    faq.question.toLowerCase().includes(query) || 
-    faq.answer.toLowerCase().includes(query)
-  );
-  renderFAQ(filtered);
-});
-
-// 영수증 파일 선택
-receiptInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      previewImage.src = event.target.result;
-      previewArea.classList.remove('hidden');
-      document.getElementById('cameraArea').querySelector('.text-center').classList.add('hidden');
-    };
-    reader.readAsDataURL(file);
-  }
-});
-
-// OCR 분석
-let currentOCRData = null;
-
-analyzeBtn.addEventListener('click', async () => {
-  try {
-    analyzeBtn.disabled = true;
-    analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 분석 중...';
-    
-    const response = await fetch('/api/ocr', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: previewImage.src })
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      currentOCRData = result.data;
-      displayOCRResults(result.data);
-    }
-  } catch (error) {
-    console.error('OCR 오류:', error);
-    alert('OCR 분석 중 오류가 발생했습니다');
-  } finally {
-    analyzeBtn.disabled = false;
-    analyzeBtn.innerHTML = '<i class="fas fa-magic mr-2"></i> OCR 분석 시작';
-  }
-});
-
-// OCR 결과 표시
-function displayOCRResults(data) {
-  ocrData.innerHTML = `
-    <div class="space-y-2">
-      <div class="flex justify-between items-center bg-white rounded-lg p-3">
-        <span class="text-gray-600">날짜</span>
-        <span class="font-semibold">${data.date}</span>
-      </div>
-      <div class="flex justify-between items-center bg-white rounded-lg p-3">
-        <span class="text-gray-600">금액</span>
-        <span class="font-semibold text-lg text-purple-600">${data.amount.toLocaleString()}원</span>
-      </div>
-      <div class="flex justify-between items-center bg-white rounded-lg p-3">
-        <span class="text-gray-600">업체명</span>
-        <span class="font-semibold">${data.vendor}</span>
-      </div>
-      <div class="flex justify-between items-center bg-white rounded-lg p-3">
-        <span class="text-gray-600">부가세</span>
-        <span class="font-semibold">${data.vat.toLocaleString()}원</span>
-      </div>
-      <div class="flex justify-between items-center bg-white rounded-lg p-3">
-        <span class="text-gray-600">카테고리</span>
-        <span class="font-semibold bg-blue-100 text-blue-800 px-3 py-1 rounded-full">${data.category}</span>
-      </div>
-      <div class="flex justify-between items-center bg-white rounded-lg p-3">
-        <span class="text-gray-600">신뢰도</span>
-        <span class="font-semibold text-green-600">${(data.confidence * 100).toFixed(0)}%</span>
-      </div>
-    </div>
-  `;
-  
-  ocrResults.classList.remove('hidden');
-}
-
-// 경비 목록에 추가
-addExpenseBtn.addEventListener('click', () => {
-  if (currentOCRData) {
-    expenses.push(currentOCRData);
-    renderExpenseList();
-    
-    // 초기화
-    previewArea.classList.add('hidden');
-    ocrResults.classList.add('hidden');
-    document.getElementById('cameraArea').querySelector('.text-center').classList.remove('hidden');
-    receiptInput.value = '';
-    currentOCRData = null;
-    
-    alert('경비 목록에 추가되었습니다!');
-  }
-});
-
-// 경비 목록 렌더링
-function renderExpenseList() {
-  if (expenses.length === 0) {
-    expenseList.innerHTML = '<p class="text-gray-500 text-center py-8">영수증을 추가하세요</p>';
-    return;
-  }
-  
-  expenseList.innerHTML = expenses.map((exp, index) => {
-    const riskBadge = exp.risk_level === 'high' 
-      ? '<span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">⚠️ 검토권장</span>'
-      : exp.risk_level === 'mid'
-      ? '<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">⚡ 주의</span>'
-      : '<span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">✅ 안전</span>';
-    
-    return `
-    <div class="bg-gradient-to-r from-white to-gray-50 rounded-xl p-4 shadow-md hover:shadow-lg transition flex justify-between items-center">
-      <div class="flex-1">
-        <div class="flex items-center space-x-3 mb-2">
-          <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold">${exp.category}</span>
-          <span class="text-gray-600 text-sm">${exp.date}</span>
-          ${riskBadge}
-        </div>
-        <p class="font-semibold text-gray-800">${exp.vendor}</p>
-        <p class="text-lg font-bold text-purple-600">${exp.amount.toLocaleString()}원</p>
-        ${exp.risk_level === 'high' ? '<button onclick="requestSpotReview(' + index + ')" class="mt-2 text-xs text-blue-600 hover:underline">💡 전문가 검토 요청 (1,900원)</button>' : ''}
-      </div>
-      <button onclick="removeExpense(${index})" class="text-red-500 hover:text-red-700 transition">
-        <i class="fas fa-trash-alt text-xl"></i>
-      </button>
-    </div>
-  `}).join('');
-}
-
-// 건당 전문가 리뷰 요청
-window.requestSpotReview = async function(index) {
-  const expense = expenses[index];
-  
-  if (!confirm(`"${expense.vendor}" 항목을 전문가에게 검토 요청하시겠습니까?\n비용: 1,900원 (24시간 이내 답변)`)) {
-    return;
-  }
-  
-  try {
-    const response = await fetch('/api/spot-review', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        expense_id: `exp_${index}`,
-        user_note: ''
-      })
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      alert(`✅ ${result.data.message}\n검토 ID: ${result.data.review_id}`);
-    }
-  } catch (error) {
-    console.error('검토 요청 오류:', error);
-    alert('요청 중 오류가 발생했습니다');
-  }
-};
-
-// 통장 캡처 파일 선택
-bankInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      bankPreviewImage.src = event.target.result;
-      bankPreviewArea.classList.remove('hidden');
-      document.querySelector('#bankCaptureSection .text-center').classList.add('hidden');
-    };
-    reader.readAsDataURL(file);
-  }
-});
-
-// 통장 내역 분석
-analyzeBankBtn.addEventListener('click', async () => {
-  try {
-    analyzeBankBtn.disabled = true;
-    analyzeBankBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 분석 중...';
-    
-    const response = await fetch('/api/bank-capture', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: bankPreviewImage.src })
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      bankTransactions = result.data.transactions;
-      displayBankTransactions(result.data.transactions);
-      selectedBankItems = result.data.transactions.map((_, i) => i);
-    }
-  } catch (error) {
-    console.error('통장 분석 오류:', error);
-    alert('분석 중 오류가 발생했습니다');
-  } finally {
-    analyzeBankBtn.disabled = false;
-    analyzeBankBtn.innerHTML = '<i class="fas fa-magic mr-2"></i> 거래내역 분석 시작';
-  }
-});
-
-// 통장 거래내역 표시
-function displayBankTransactions(transactions) {
-  bankTransactionsEl.innerHTML = transactions.map((tx, index) => {
-    const labelColor = tx.label === '사업추정' ? 'bg-blue-100 text-blue-800' 
-                      : tx.label === '검토필요' ? 'bg-yellow-100 text-yellow-800' 
-                      : 'bg-gray-100 text-gray-800';
-    
-    const riskIcon = tx.risk_level === 'high' ? '⚠️' : tx.risk_level === 'mid' ? '⚡' : '✅';
-    
-    return `
-    <div class="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition">
-      <div class="flex items-center justify-between mb-2">
-        <label class="flex items-center space-x-2 cursor-pointer">
-          <input type="checkbox" checked class="bank-tx-checkbox" data-index="${index}" onchange="toggleBankItem(${index})">
-          <span class="font-semibold text-gray-800">${tx.merchant}</span>
-        </label>
-        <span class="${labelColor} px-2 py-1 rounded-full text-xs">${riskIcon} ${tx.label}</span>
-      </div>
-      <div class="flex justify-between items-center text-sm">
-        <span class="text-gray-600">${tx.date}</span>
-        <span class="font-bold text-purple-600">${tx.amount.toLocaleString()}원</span>
-      </div>
-      <div class="mt-1 text-xs text-gray-500">
-        <span class="bg-purple-50 text-purple-700 px-2 py-1 rounded">${tx.category}</span>
-        <span class="ml-2">신뢰도: ${(tx.confidence * 100).toFixed(0)}%</span>
-      </div>
-    </div>
-  `}).join('');
-  
-  bankResults.classList.remove('hidden');
-}
-
-// 통장 항목 선택 토글
-window.toggleBankItem = function(index) {
-  const idx = selectedBankItems.indexOf(index);
-  if (idx > -1) {
-    selectedBankItems.splice(idx, 1);
-  } else {
-    selectedBankItems.push(index);
-  }
-};
-
-// 통장 항목 경비에 추가
-addBankExpensesBtn.addEventListener('click', () => {
-  const selectedTransactions = selectedBankItems.map(i => bankTransactions[i]);
-  
-  selectedTransactions.forEach(tx => {
-    expenses.push({
-      date: tx.date,
-      amount: tx.amount,
-      vendor: tx.merchant,
-      category: tx.category,
-      confidence: tx.confidence,
-      risk_level: tx.risk_level,
-      source: 'bank'
-    });
+if (document.getElementById('faqSearch')) {
+  document.getElementById('faqSearch').addEventListener('input', function(e) {
+    const query = e.target.value.toLowerCase();
+    const filteredFAQs = faqData.filter(faq => 
+      faq.question.toLowerCase().includes(query) || 
+      faq.answer.toLowerCase().includes(query)
+    );
+    displayFAQ(filteredFAQs);
   });
-  
-  renderExpenseList();
-  
-  // 초기화
-  bankPreviewArea.classList.add('hidden');
-  bankResults.classList.add('hidden');
-  document.querySelector('#bankCaptureSection .text-center').classList.remove('hidden');
-  bankInput.value = '';
-  
-  alert(`${selectedTransactions.length}개 항목이 경비에 추가되었습니다!`);
-});
-
-// 갤러리 파일 선택
-galleryInput.addEventListener('change', (e) => {
-  const files = Array.from(e.target.files);
-  if (files.length > 0) {
-    galleryImages = files;
-    galleryFileCount.classList.remove('hidden');
-    galleryFileCount.textContent = `${files.length}개 파일 선택됨`;
-    galleryResults.classList.remove('hidden');
-    galleryCount.textContent = files.length;
-    
-    // 썸네일 표시
-    displayGalleryThumbnails(files);
-  }
-});
-
-// 갤러리 썸네일 표시
-function displayGalleryThumbnails(files) {
-  galleryGrid.innerHTML = files.map((file, index) => {
-    const url = URL.createObjectURL(file);
-    return `
-    <div class="relative">
-      <img src="${url}" class="w-full h-32 object-cover rounded-lg shadow-md">
-      <div class="absolute top-2 right-2 bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
-        ${index + 1}
-      </div>
-    </div>
-  `}).join('');
 }
 
-// 갤러리 일괄 분석
-processGalleryBtn.addEventListener('click', async () => {
-  try {
-    processGalleryBtn.disabled = true;
-    processGalleryBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 분석 중...';
-    
-    // 이미지를 base64로 변환
-    const imagePromises = galleryImages.map(file => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.readAsDataURL(file);
-      });
-    });
-    
-    const images = await Promise.all(imagePromises);
-    
-    const response = await fetch('/api/gallery-upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ images })
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      displayGalleryResults(result.data.processed);
-    }
-  } catch (error) {
-    console.error('갤러리 분석 오류:', error);
-    alert('분석 중 오류가 발생했습니다');
-  } finally {
-    processGalleryBtn.disabled = false;
-    processGalleryBtn.innerHTML = '<i class="fas fa-magic mr-2"></i> 일괄 분석 시작';
-  }
-});
-
-// 갤러리 분석 결과 표시
-function displayGalleryResults(processed) {
-  galleryProcessedResults.innerHTML = processed.map((item, index) => {
-    const typeIcon = item.type === 'receipt' ? '🧾' : item.type === 'statement' ? '📊' : '📱';
-    const riskColor = item.data.risk_level === 'high' ? 'border-red-500' 
-                     : item.data.risk_level === 'mid' ? 'border-yellow-500' 
-                     : 'border-green-500';
-    
-    return `
-    <div class="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition border-l-4 ${riskColor}">
-      <div class="flex justify-between items-start mb-2">
-        <div class="flex items-center space-x-2">
-          <span class="text-2xl">${typeIcon}</span>
-          <div>
-            <p class="font-semibold text-gray-800">${item.data.vendor}</p>
-            <p class="text-xs text-gray-500">${item.type === 'receipt' ? '영수증' : item.type === 'statement' ? '거래내역' : '스크린샷'}</p>
-          </div>
-        </div>
-        <span class="text-lg font-bold text-purple-600">${item.data.amount.toLocaleString()}원</span>
-      </div>
-      <div class="flex justify-between items-center text-sm">
-        <span class="text-gray-600">${item.data.date}</span>
-        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">${item.data.category}</span>
-      </div>
-    </div>
-  `}).join('');
-  
-  galleryProcessedResults.classList.remove('hidden');
-  addGalleryExpensesBtn.classList.remove('hidden');
-  
-  // 전역 변수에 저장
-  window.galleryProcessedData = processed;
-}
-
-// 갤러리 항목 모두 경비에 추가
-addGalleryExpensesBtn.addEventListener('click', () => {
-  if (!window.galleryProcessedData) return;
-  
-  window.galleryProcessedData.forEach(item => {
-    expenses.push({
-      ...item.data,
-      source: 'gallery',
-      type: item.type
-    });
-  });
-  
-  renderExpenseList();
-  
-  // 초기화
-  galleryResults.classList.add('hidden');
-  galleryProcessedResults.classList.add('hidden');
-  addGalleryExpensesBtn.classList.add('hidden');
-  galleryFileCount.classList.add('hidden');
-  galleryInput.value = '';
-  
-  alert(`${window.galleryProcessedData.length}개 항목이 경비에 추가되었습니다!`);
-});
-
-// 경비 삭제
-window.removeExpense = function(index) {
-  if (confirm('이 항목을 삭제하시겠습니까?')) {
-    expenses.splice(index, 1);
-    renderExpenseList();
-  }
+// 언어 변경
+window.changeLang = function(lang) {
+  currentLang = lang;
+  loadFAQ(lang);
+  showToast(`언어가 ${lang}로 변경되었습니다`);
 };
 
-// 세금 계산
-calculateBtn.addEventListener('click', async () => {
-  if (expenses.length === 0) {
-    alert('먼저 영수증을 추가하세요');
-    return;
-  }
-  
-  try {
-    calculateBtn.disabled = true;
-    calculateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 계산 중...';
-    
-    const response = await fetch('/api/calculate-tax', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ expenses })
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      displayTaxResults(result.data);
-    }
-  } catch (error) {
-    console.error('세금 계산 오류:', error);
-    alert('세금 계산 중 오류가 발생했습니다');
-  } finally {
-    calculateBtn.disabled = false;
-    calculateBtn.innerHTML = '<i class="fas fa-calculator mr-2"></i> 세금 계산하기';
-  }
-});
+// ==================== 스크롤 헬퍼 ====================
 
-// 세금 결과 표시
-function displayTaxResults(data) {
-  taxSummary.innerHTML = `
-    <div class="bg-white rounded-xl p-6 shadow-lg text-center">
-      <i class="fas fa-receipt text-4xl text-purple-600 mb-3"></i>
-      <h3 class="text-lg font-semibold text-gray-600 mb-2">총 경비</h3>
-      <p class="text-3xl font-bold text-gray-800">${data.totalExpense.toLocaleString()}<span class="text-lg">원</span></p>
-    </div>
-    <div class="bg-white rounded-xl p-6 shadow-lg text-center">
-      <i class="fas fa-check-circle text-4xl text-blue-600 mb-3"></i>
-      <h3 class="text-lg font-semibold text-gray-600 mb-2">공제 가능</h3>
-      <p class="text-3xl font-bold text-gray-800">${data.deductible.toLocaleString()}<span class="text-lg">원</span></p>
-    </div>
-    <div class="bg-white rounded-xl p-6 shadow-lg text-center">
-      <i class="fas fa-calculator text-4xl text-orange-600 mb-3"></i>
-      <h3 class="text-lg font-semibold text-gray-600 mb-2">예상 세금</h3>
-      <p class="text-3xl font-bold text-gray-800">${data.estimatedTax.toLocaleString()}<span class="text-lg">원</span></p>
-    </div>
-    <div class="bg-white rounded-xl p-6 shadow-lg text-center">
-      <i class="fas fa-money-bill-wave text-4xl text-green-600 mb-3"></i>
-      <h3 class="text-lg font-semibold text-gray-600 mb-2">환급 예상</h3>
-      <p class="text-3xl font-bold text-green-600">${data.refundEstimate.toLocaleString()}<span class="text-lg">원</span></p>
-    </div>
-  `;
-  
-  taxResult.classList.remove('hidden');
-  taxResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
+window.scrollToSection = function(sectionId) {
+  scrollToElement(sectionId);
+};
 
-// 초기화
-document.addEventListener('DOMContentLoaded', () => {
-  // 기본 언어로 FAQ 로드
-  loadFAQ(currentLang);
+// ==================== 초기화 ====================
+
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('✅ 세무신고 플랫폼 초기화 완료');
+  
+  // FAQ 초기 로드
+  loadFAQ('ko');
+  
+  // 경비 목록 초기화
+  updateExpenseList();
+  updateTaxSummary();
 });
