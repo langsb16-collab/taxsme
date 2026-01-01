@@ -547,39 +547,317 @@ input[type="file"] {
   color: white;
 }
 
-/* ==================== 반응형 ==================== */
+/* ==================== 반응형 디자인 시스템 ==================== */
 
-@media (max-width: 768px) {
+/* 모바일 우선(Mobile First) - 320~767px */
+@media (max-width: 767px) {
+  /* 타이포그래피 */
   h1 {
-    font-size: 2rem;
+    font-size: 1.75rem; /* 28px */
+    line-height: 1.3;
   }
   
   h2 {
-    font-size: 1.5rem;
+    font-size: 1.375rem; /* 22px */
+    line-height: 1.3;
   }
   
+  h3 {
+    font-size: 1.125rem; /* 18px */
+  }
+  
+  body {
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.6;
+  }
+  
+  /* 레이아웃 */
+  .container {
+    padding: 0 var(--space-3);
+  }
+  
+  .section {
+    padding: var(--space-8) 0;
+  }
+  
+  /* 버튼 - 터치 최적화 (최소 44px 높이) */
+  .btn {
+    width: 100%;
+    min-height: 44px;
+    padding: var(--space-3) var(--space-4);
+    font-size: 1rem;
+  }
+  
+  /* 선택 버튼 - 세로 스택 */
   .choice-group {
     grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+  
+  .choice-btn {
+    min-height: 52px;
+    padding: var(--space-4);
+    font-size: 1rem;
+  }
+  
+  /* 카드 */
+  .card {
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+  }
+  
+  /* 챗봇 */
+  #chatbotIcon {
+    width: 64px;
+    height: 64px;
+    font-size: 32px;
+    bottom: 16px;
+    right: 16px;
   }
   
   #chatbotWindow {
-    width: calc(100vw - 48px);
-    right: 24px;
-    max-height: 70vh;
+    width: calc(100vw - 32px);
+    right: 16px;
+    bottom: 90px;
+    max-height: 65vh;
   }
   
-  #chatbotIcon {
-    width: 96px;  /* 모바일에서는 75% 크기 */
-    height: 96px;
-    font-size: 42px;
-  }
-  
+  /* FAQ 그리드 */
   .faq-grid {
-    grid-template-columns: repeat(2, 1fr);  /* 모바일에서는 2열 */
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
   }
   
+  .faq-card {
+    min-height: 80px;
+    padding: var(--space-3);
+  }
+  
+  .faq-card-number {
+    font-size: 1.25rem;
+  }
+  
+  .faq-card-title {
+    font-size: 0.875rem;
+  }
+  
+  /* 파일 업로드 영역 */
+  .file-upload-area {
+    padding: var(--space-6);
+  }
+  
+  /* 메시지 박스 */
+  .message-box {
+    padding: var(--space-3);
+    font-size: 0.875rem;
+  }
+  
+  /* 위험도 배지 */
+  .risk-badge {
+    font-size: 0.75rem;
+    padding: 4px var(--space-2);
+  }
+}
+
+/* 태블릿 (768px ~ 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* 타이포그래피 */
+  h1 {
+    font-size: 2.25rem; /* 36px */
+  }
+  
+  h2 {
+    font-size: 1.75rem; /* 28px */
+  }
+  
+  body {
+    font-size: 1rem; /* 16px */
+  }
+  
+  /* 레이아웃 */
+  .container {
+    padding: 0 var(--space-6);
+  }
+  
+  /* 버튼 */
   .btn {
-    width: 100%;
+    min-height: 48px;
+  }
+  
+  /* 선택 버튼 - 2열 */
+  .choice-group {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+  }
+  
+  /* FAQ 그리드 - 2열 */
+  .faq-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+  
+  /* 챗봇 */
+  #chatbotWindow {
+    width: 420px;
+    max-height: 650px;
+  }
+}
+
+/* 데스크톱 (1024px 이상) */
+@media (min-width: 1024px) {
+  /* 타이포그래피 */
+  h1 {
+    font-size: 2.5rem; /* 40px */
+    line-height: 1.2;
+  }
+  
+  h2 {
+    font-size: 2rem; /* 32px */
+  }
+  
+  h3 {
+    font-size: 1.5rem; /* 24px */
+  }
+  
+  body {
+    font-size: 1.125rem; /* 18px */
+    line-height: 1.7;
+  }
+  
+  /* 레이아웃 - 넓은 여백 */
+  .container {
+    max-width: 1200px;
+    padding: 0 var(--space-8);
+  }
+  
+  .section {
+    padding: var(--space-12) 0;
+  }
+  
+  /* 버튼 - 마우스 최적화 */
+  .btn {
+    width: auto;
+    min-width: 160px;
+    padding: var(--space-4) var(--space-8);
+    font-size: 1.125rem;
+  }
+  
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+  
+  /* 선택 버튼 - 3열 유지 */
+  .choice-group {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+    max-width: 800px;
+  }
+  
+  .choice-btn {
+    min-height: 120px;
+    padding: var(--space-6);
+  }
+  
+  .choice-btn:hover {
+    transform: translateY(-3px);
+  }
+  
+  /* 카드 - 호버 효과 강화 */
+  .card {
+    padding: var(--space-8);
+  }
+  
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  /* FAQ 그리드 - 3열 */
+  .faq-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+  
+  .faq-card {
+    min-height: 120px;
+  }
+  
+  .faq-card:hover {
+    transform: translateY(-3px);
+  }
+  
+  /* 챗봇 */
+  #chatbotIcon {
+    width: 80px;
+    height: 80px;
+    font-size: 40px;
+  }
+  
+  #chatbotIcon:hover {
+    transform: scale(1.15);
+  }
+  
+  #chatbotWindow {
+    width: 480px;
+    max-height: 700px;
+  }
+  
+  /* 파일 업로드 - 넓은 영역 */
+  .file-upload-area {
+    padding: var(--space-12);
+  }
+  
+  /* 그리드 레이아웃 지원 */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+  }
+  
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+  }
+  
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-6);
+  }
+}
+
+/* 초대형 화면 (1440px 이상) */
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1400px;
+  }
+  
+  h1 {
+    font-size: 3rem; /* 48px */
+  }
+  
+  h2 {
+    font-size: 2.25rem; /* 36px */
+  }
+}
+
+/* 터치 디바이스 최적화 */
+@media (hover: none) and (pointer: coarse) {
+  /* 터치 영역 최소 44x44px */
+  .btn, .choice-btn, .faq-card {
+    min-height: 44px;
+  }
+  
+  /* 호버 효과 제거 */
+  .btn:hover, .card:hover, .choice-btn:hover, .faq-card:hover {
+    transform: none;
+  }
+  
+  /* 활성 상태 시각 피드백 */
+  .btn:active {
+    opacity: 0.8;
+    transform: scale(0.98);
   }
 }
 
