@@ -1,1 +1,133 @@
-h1 { font-family: Arial, Helvetica, sans-serif; }
+/* 커스텀 애니메이션 */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out;
+}
+
+/* 챗봇 스타일 */
+#chatbotWindow {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* FAQ 아이템 */
+.faq-item {
+  transition: all 0.2s ease;
+}
+
+.faq-item:hover {
+  transform: translateX(4px);
+}
+
+.faq-question:hover {
+  background-color: rgba(147, 51, 234, 0.05);
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* 언어 버튼 */
+.lang-btn {
+  transition: all 0.2s ease;
+  opacity: 0.6;
+}
+
+.lang-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* 스크롤바 커스터마이징 */
+#faqList::-webkit-scrollbar {
+  width: 6px;
+}
+
+#faqList::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+#faqList::-webkit-scrollbar-thumb {
+  background: #9333ea;
+  border-radius: 10px;
+}
+
+#faqList::-webkit-scrollbar-thumb:hover {
+  background: #7c3aed;
+}
+
+/* 호버 효과 */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  #chatbotWindow {
+    width: calc(100vw - 24px);
+    right: 12px;
+    max-height: 70vh;
+  }
+  
+  .text-5xl {
+    font-size: 2.5rem;
+  }
+  
+  .text-6xl {
+    font-size: 3rem;
+  }
+}
+
+/* 그라디언트 텍스트 */
+.bg-clip-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 로딩 스피너 */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fa-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* 부드러운 전환 */
+* {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* 포커스 스타일 */
+input:focus,
+button:focus {
+  outline: 2px solid rgba(147, 51, 234, 0.5);
+  outline-offset: 2px;
+}
