@@ -551,10 +551,23 @@ input[type="file"] {
 
 /* 모바일 우선(Mobile First) - 320~767px */
 @media (max-width: 767px) {
+  /* 네비게이션 최적화 */
+  nav .container {
+    height: 60px !important;
+  }
+  
+  #navTitle {
+    font-size: 16px !important;
+  }
+  
+  nav .btn-ghost {
+    padding: 4px 8px !important;
+  }
+  
   /* 타이포그래피 */
   h1 {
-    font-size: 1.75rem; /* 28px */
-    line-height: 1.3;
+    font-size: 1.75rem !important; /* 28px */
+    line-height: 1.3 !important;
   }
   
   h2 {

@@ -75,8 +75,25 @@ function updateUILanguage() {
     pageTitle.textContent = titleMap[lang];
   }
   
-  // 현재 언어 텍스트
+  // 현재 언어 국기 및 텍스트
+  const langFlagMap = {
+    'ko': '🇰🇷',
+    'en': '🇺🇸',
+    'zh-CN': '🇨🇳',
+    'zh-TW': '🇹🇼',
+    'ja': '🇯🇵',
+    'vi': '🇻🇳',
+    'es': '🇪🇸',
+    'de': '🇩🇪'
+  };
+  
+  const currentLangFlag = document.getElementById('currentLangFlag');
   const currentLangText = document.getElementById('currentLangText');
+  
+  if (currentLangFlag && langFlagMap[lang]) {
+    currentLangFlag.textContent = langFlagMap[lang];
+  }
+  
   if (currentLangText && window.translations && window.translations[lang]) {
     currentLangText.textContent = window.translations[lang].languageName;
   }

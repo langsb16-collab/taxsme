@@ -288,14 +288,13 @@ app.get('/', (c) => {
         <div class="container" style="display: flex; justify-content: space-between; align-items: center; height: 72px;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <i class="fas fa-receipt" style="font-size: 32px; color: var(--clear-mint);"></i>
-                <span style="font-family: var(--font-headline); font-size: 24px; font-weight: 700; color: var(--midnight-navy);">세무신고 플랫폼</span>
+                <span id="navTitle" style="font-family: var(--font-headline); font-size: 18px; font-weight: 700; color: var(--midnight-navy);">세무신고 플랫폼</span>
             </div>
             <div style="display: flex; align-items: center; gap: 24px;">
                 <!-- 언어 선택 드롭다운 -->
                 <div style="position: relative;">
-                    <button id="langDropdownBtn" onclick="toggleLangDropdown()" class="btn btn-ghost" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
-                        <i class="fas fa-globe"></i>
-                        <span id="currentLangText">한국어</span>
+                    <button id="langDropdownBtn" onclick="toggleLangDropdown()" class="btn btn-ghost" style="display: flex; align-items: center; gap: 4px; padding: 6px 12px; min-width: auto;">
+                        <span id="currentLangFlag" style="font-size: 1.25rem;">🇰🇷</span>
                         <i class="fas fa-chevron-down" style="font-size: 0.75rem;"></i>
                     </button>
                     <div id="langDropdown" class="hidden" style="position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(13, 27, 42, 0.16); min-width: 200px; z-index: 100;">
@@ -336,9 +335,11 @@ app.get('/', (c) => {
                     </div>
                 </div>
                 
-                <a href="#" id="navNotice" style="color: var(--text-secondary); text-decoration: none; font-weight: 500;">공지</a>
-                <a href="#" id="navLogin" style="color: var(--text-secondary); text-decoration: none; font-weight: 500;">로그인</a>
-                <button class="btn btn-primary" id="navSignup">회원가입</button>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <a href="#" id="navNotice" style="color: var(--text-secondary); text-decoration: none; font-weight: 500; font-size: 0.875rem;">공지</a>
+                    <a href="#" id="navLogin" style="color: var(--text-secondary); text-decoration: none; font-weight: 500; font-size: 0.875rem;">로그인</a>
+                </div>
+                <button class="btn btn-primary" id="navSignup" style="padding: 8px 16px; font-size: 0.875rem;">회원가입</button>
             </div>
         </div>
     </nav>
@@ -350,13 +351,14 @@ app.get('/', (c) => {
             <!-- 히어로 섹션 -->
             <div class="text-center animate-fade-in" style="margin-bottom: 48px;">
                 <h1 style="font-size: 3.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 24px; color: var(--midnight-navy);">
-                    세금 때문에 멈추지 마세요
+                    사진(Snap)으로 해결하는 세금
                 </h1>
                 <p style="font-size: 1.5rem; color: var(--text-secondary); margin-bottom: 16px;">
-                    일하느라 바쁜 당신 대신, 신고는 우리가 합니다
+                    카메라 렌즈로 끝나는 신고
                 </p>
                 <p style="font-size: 1.125rem; color: var(--text-tertiary); margin-bottom: 32px;">
-                    영수증 없어도 괜찮습니다 • 통장 캡처로 경비 처리 • 건당 1,900원 전문가 검토
+                    영수증 없어도 괜찮습니다<br>
+                    통장 캡처로 경비 처리
                 </p>
                 <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
                     <button onclick="scrollToSection('modes')" class="btn btn-primary" style="font-size: 1.125rem; padding: 16px 32px;">
@@ -373,7 +375,10 @@ app.get('/', (c) => {
             <!-- 안심 메시지 배너 -->
             <div class="message-box message-reassure animate-slide-up" style="font-size: 1.125rem; text-align: center;">
                 <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
-                <strong>사진만 있으면 시작할 수 있어요.</strong> 정식 장부가 없어도 출발할 수 있어야 진짜 초보자를 위한 서비스죠.
+                <span style="font-size: 0.875rem; line-height: 1.5;">
+                    사진만 있으면 시작할 수 있어요.<br>
+                    정식 장부가 없어도 출발할 수 있어야 진짜 초보자를 위한 서비스죠.
+                </span>
             </div>
 
             <!-- 주요 기능 카드 -->
