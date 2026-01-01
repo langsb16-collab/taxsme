@@ -1,11 +1,128 @@
 // ==================== 전역 상태 관리 ====================
-let currentLang = 'ko';
+let currentLang = localStorage.getItem('selectedLang') || 'ko';
 let expenses = [];
 let faqData = [];
 let bankTransactions = [];
 let galleryImages = [];
 let selectedBankItems = new Set();
 let currentMode = null;
+
+// ==================== 다국어 지원 ====================
+
+// 언어 드롭다운 토글
+window.toggleLangDropdown = function() {
+  const dropdown = document.getElementById('langDropdown');
+  if (dropdown) {
+    dropdown.classList.toggle('hidden');
+  }
+};
+
+// 페이지 외부 클릭 시 드롭다운 닫기
+document.addEventListener('click', function(e) {
+  const dropdown = document.getElementById('langDropdown');
+  const btn = document.getElementById('langDropdownBtn');
+  
+  if (dropdown && btn && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+    dropdown.classList.add('hidden');
+  }
+});
+
+// 언어 변경
+window.changeLang = function(lang) {
+  currentLang = lang;
+  localStorage.setItem('selectedLang', lang);
+  
+  // 드롭다운 닫기
+  const dropdown = document.getElementById('langDropdown');
+  if (dropdown) {
+    dropdown.classList.add('hidden');
+  }
+  
+  // UI 업데이트
+  updateUILanguage();
+  
+  // FAQ 다시 로드
+  loadFAQ(lang);
+  
+  // 토스트 메시지
+  showToast(t(lang, 'toast.languageChanged'));
+};
+
+// UI 언어 업데이트
+function updateUILanguage() {
+  const lang = currentLang;
+  
+  // HTML lang 속성
+  const htmlRoot = document.getElementById('htmlRoot');
+  if (htmlRoot) {
+    htmlRoot.setAttribute('lang', lang);
+  }
+  
+  // 페이지 타이틀
+  const titleMap = {
+    'ko': '세무신고 플랫폼 - 영수증 없어도 신고는 됩니다',
+    'en': 'Tax Filing Platform - No receipt needed',
+    'zh-CN': '税务申报平台 - 无需收据',
+    'zh-TW': '稅務申報平台 - 無需收據',
+    'ja': '税務申告プラットフォーム - レシート不要',
+    'vi': 'Nền tảng khai thuế - Không cần hóa đơn',
+    'es': 'Plataforma de declaración fiscal - Sin recibo',
+    'de': 'Steuererklärungsplattform - Kein Beleg erforderlich'
+  };
+  
+  const pageTitle = document.getElementById('pageTitle');
+  if (pageTitle && titleMap[lang]) {
+    pageTitle.textContent = titleMap[lang];
+  }
+  
+  // 현재 언어 텍스트
+  const currentLangText = document.getElementById('currentLangText');
+  if (currentLangText && window.translations && window.translations[lang]) {
+    currentLangText.textContent = window.translations[lang].languageName;
+  }
+  
+  // 언어 옵션 활성화 표시
+  document.querySelectorAll('.lang-option').forEach(option => {
+    const optionLang = option.getAttribute('data-lang');
+    if (optionLang === lang) {
+      option.style.background = 'var(--soft-fog)';
+      option.style.fontWeight = '600';
+    } else {
+      option.style.background = 'none';
+      option.style.fontWeight = '500';
+    }
+  });
+  
+  // 네비게이션
+  const navNotice = document.getElementById('navNotice');
+  const navLogin = document.getElementById('navLogin');
+  const navSignup = document.getElementById('navSignup');
+  
+  if (navNotice) navNotice.textContent = t(lang, 'nav.notice');
+  if (navLogin) navLogin.textContent = t(lang, 'nav.login');
+  if (navSignup) navSignup.textContent = t(lang, 'nav.signup');
+  
+  // 챗봇 제목
+  const chatbotTitle = document.getElementById('chatbotTitle');
+  if (chatbotTitle) {
+    chatbotTitle.textContent = t(lang, 'chatbot.title');
+  }
+  
+  // FAQ 검색 플레이스홀더
+  const faqSearch = document.getElementById('faqSearch');
+  if (faqSearch) {
+    faqSearch.placeholder = t(lang, 'chatbot.searchPlaceholder');
+  }
+  
+  // 경비 목록 업데이트 (언어 변경 반영)
+  updateExpenseList();
+  updateTaxSummary();
+}
+
+// 단축 함수
+function t(lang, key) {
+  return window.getTranslation ? window.getTranslation(lang, key) : key;
+}
 
 // ==================== 유틸리티 함수 ====================
 
