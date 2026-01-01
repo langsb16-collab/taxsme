@@ -1,465 +1,319 @@
-# 세무신고 플랫폼
+# 세무신고 플랫폼 - "영수증 없어도 신고는 됩니다"
 
-영수증 촬영만으로 세무신고까지 자동으로 완료하는 혁신적인 플랫폼입니다.
+> **사진만 있으면 시작할 수 있어요. 세금은 우리가 계산하고, 결정은 당신이 합니다.**
 
-## 🌟 프로젝트 개요
+프리랜서와 초소형 자영업자를 위한, 세상에서 가장 쉬운 세무 신고 플랫폼입니다.
 
-**목표**: 영수증 사진 촬영 → OCR 자동인식 → 자동분류 → 세액계산 → 제출/파일생성 → 전문가 대행까지 원스톱 세무신고 시스템
+---
 
-**타겟**: 프리랜서, 초소형 자영업자, 1인 사업자 (월 매출 소규모, 부업)
+## 🎯 프로젝트 개요
 
-**주요 기능**:
-- 📸 **영수증 촬영** - 정식 영수증 자동 인식 (OCR)
-- 🏦 **통장 캡처** - 영수증 없어도 거래내역만으로 경비 처리 ✨ NEW
-- 🖼️ **갤러리 일괄 업로드** - 사진첩 이미지 한 번에 처리 (최대 20장) ✨ NEW
-- 🤖 AI 기반 자동 경비 분류
-- ⚠️ **위험도 스코어링** - 세무 리스크 자동 분석 ✨ NEW
-- 👨‍💼 **건당 전문가 리뷰** - 애매한 항목만 1,900원에 검토 ✨ NEW
-- 💰 실시간 세금 계산 및 환급 예상액 표시
-- 🌏 6개 언어 지원 (한국어, 영어, 중국어, 일본어, 독일어, 스페인어)
-- 💬 다국어 FAQ 자동응답 챗봇 (18개 질문)
-- 📊 세무 신고서 자동 생성 (XML/CSV)
+### 디자인 컨셉 (Design Identity)
 
-## 💡 프리랜서 맞춤 차별화 기능
+**핵심 키워드:**
+- **"두려움을 제거하는 인터페이스"**
+- **"복잡보다 확신, 설명보다 선택"**
+- **"당신이 모를 것을 우리가 전제로 한다"**
 
-### 1. 영수증 없어도 OK! 통장 캡처 🏦
+**디자인 목표:**
+
+| 항목 | 기존 세무 서비스 | 제안 컨셉 |
+|------|-----------------|-----------|
+| 감정 톤 | 위협적, 경고, 책임 강조 | 안심감, 안내, 동행형 |
+| 정보 구조 | 정보 과잉, 세무 용어 난립 | 3~5개 요소만 정제 |
+| 색감 | 차가운 금융 UI | 따뜻한 전문가 느낌 + 신뢰 |
+| 타이포 | 테크/관공서 스타일 | 인간 친화 + 브랜드 정체감 |
+
+### UI 컬러 시스템
+
+**Primary (신뢰/전문)**
+- Midnight Navy `#0D1B2A`
+- Deep Green Ledger `#102D29`
+
+**Secondary (편안/친숙)**
+- Cream White `#FAF9F6`
+- Sand Beige `#EDE9E3`
+- Soft Fog Gray `#F4F4F4`
+
+**Accent (핵심 CTA)**
+- Clear Mint `#25C2A0` (주요 버튼)
+- Amber Audit `#F8A10F` (검토/주의)
+- Coral Trust `#F26B5F` (위험도 표시)
+
+### 폰트 시스템
+
+- **Headline**: Pretendard SemiBold (제목, 강조)
+- **Body**: Inter / SUIT (본문)
+- **Number**: Roboto Mono (금액, 숫자 - 가독성)
+
+---
+
+## ✨ 핵심 기능
+
+### 1. 영수증 촬영 📸
+- 카메라로 즉시 촬영 또는 파일 업로드
+- OCR 자동 인식 (일자, 금액, 업체명, 카테고리)
+- 신뢰도 점수 표시
+
+### 2. 통장 캡처 🏦 **NEW!**
+- 뱅킹앱 거래내역 화면 촬영
+- 자동 경비 분류 (사업추정/개인추정/검토필요)
+- **영수증 없이도 경비 처리 가능**
+- 위험도 자동 스코어링
+
+### 3. 갤러리 일괄 업로드 🖼️ **NEW!**
+- 사진첩에 저장된 영수증 최대 20장 동시 업로드
+- 일괄 OCR 분석 및 자동 분류
+- 한 번에 여러 경비 항목 추가
+
+### 4. 위험도 스코어링 ⚖️
+- **안전(Low)**: 자동 처리 가능
+- **검토(Mid)**: 전문가 확인 권장
+- **주의(High)**: 반드시 검토 필요
+- 금액, 거래패턴, 빈도 기반 자동 분석
+
+### 5. Spot Review (건당 전문가 리뷰) 👨‍💼
+- **월 정액 NO, 건당 1,900원만 지불**
+- 애매한 항목만 세무사 확인
+- 24시간 내 피드백
+- "여기만 좀 봐주세요" - 세무 서비스 최초 문구
+
+### 6. 실시간 세금 계산 💰
+- 총 경비 / 공제 가능액 / 예상 환급액
+- 위험도별 항목 통계
+- 자동 신고서 생성
+
+### 7. 다국어 FAQ 챗봇 🤖
+- 6개 언어 지원 (한국어, 영어, 중국어, 일본어, 독일어, 스페인어)
+- 25개 핵심 질문 답변
+- 실시간 검색 기능
+
+---
+
+## 🌐 접속 URL
+
+### 개발 서버 (Sandbox)
+- **URL**: https://3000-icxfg6c1xu0drf6l6aa3g-c07dda5e.sandbox.novita.ai
+- **상태**: ✅ Online
+- **관리**: PM2 Daemon
+
+### 프로덕션 (Cloudflare Pages)
+- **배포 대기 중**
+- 명령어: `npm run deploy`
+
+---
+
+## 📊 데이터 아키텍처
+
+### 경비 항목 (Expense)
+```json
+{
+  "id": "exp_UUID",
+  "date": "2026-01-01",
+  "amount": 45000,
+  "vendor": "스타벅스 코리아",
+  "category": "식비",
+  "risk_level": "low|mid|high",
+  "source_type": "receipt|bank|gallery",
+  "confidence": 0.95,
+  "timestamp": "ISO8601"
+}
 ```
-문제: 현금 지출, 개인 계좌 이체 등 영수증이 없는 경비
-해결: 뱅킹앱 거래내역 화면 캡처 → 자동으로 경비 후보 등록
-장점: 
-  - 증빙 부족 문제 해결
-  - 날짜, 거래처, 금액 자동 추출
-  - 사업/개인 자동 분류 추천
+
+### 통장 거래내역 (Bank Transaction)
+```json
+{
+  "id": "tx_UUID",
+  "date": "2026-01-01",
+  "merchant": "카페베네",
+  "amount": 15000,
+  "type": "withdraw|deposit",
+  "category": "식비",
+  "label": "사업추정|개인추정|검토필요",
+  "confidence": 0.88,
+  "risk_level": "low|mid|high"
+}
 ```
 
-### 2. 갤러리 사진 일괄 처리 📸
-```
-문제: 여러 장의 영수증을 일일이 촬영하기 번거로움
-해결: 사진첩에 저장된 이미지를 한 번에 업로드 (최대 20장)
-장점:
-  - 시간 절약 (1장씩 → 20장 동시)
-  - 영수증, 스크린샷, 거래내역 등 다양한 형식 인식
-  - 자동 분류 및 정리
-```
-
-### 3. 위험도 게이지 & 건당 리뷰 ⚠️
-```
-문제: 세무사 전체 대행은 비용 부담, 혼자 하기엔 불안
-해결: 위험도 자동 분석 + 애매한 항목만 골라서 검토
-비용:
-  - 자동 처리 (저위험): 무료
-  - 건당 전문가 리뷰: 1,900원 (24시간 이내)
-  - 전면 대행: 월 정액 (필요시)
+### 위험도 스코어 (Risk Score)
+```json
+{
+  "score": 45,
+  "level": "mid",
+  "factors": [
+    "고액 거래 (10만원 이상)",
+    "반복 패턴 없음",
+    "업종 평균 대비 높음"
+  ]
+}
 ```
 
-### 4. 간편 모드 (3가지 방식 선택) ⚡
-```
-워크플로우:
-1. 방식 선택
-   - 영수증 촬영 (정식 영수증)
-   - 통장 캡처 (영수증 없음)
-   - 갤러리 업로드 (사진첩)
-   
-2. 1클릭 분류
-   - 업무용 / 개인용 / 검토필요
-   
-3. 자동 계산
-   - 총 경비, 공제액, 예상 세금/환급
-   
-4. 제출
-   - 자동 제출 / 파일 다운로드 / 전문가 대행
-```
+---
 
-## 🔗 배포된 URL
+## 🚀 사용 방법
 
-- **개발 서버**: https://3000-icxfg6c1xu0drf6l6aa3g-c07dda5e.sandbox.novita.ai
-- **프로덕션**: (Cloudflare Pages 배포 후 업데이트 예정)
+### 1. 모드 선택
+3가지 입력 방식 중 선택:
+- **영수증 촬영**: 정식 영수증이 있을 때
+- **통장 캡처**: 영수증 없을 때 (추천 💡)
+- **갤러리 업로드**: 사진첩에 여러 장 있을 때
+
+### 2. 자동 분석
+- OCR이 자동으로 텍스트 추출
+- 금액, 일자, 업체명, 카테고리 자동 인식
+- 위험도 점수 계산
+
+### 3. 3버튼 선택 (통장 캡처 시)
+- **업무**: 사업용 경비로 추가
+- **개인**: 개인 지출로 분류
+- **검토필요**: Spot Review 대상
+
+### 4. 경비 누적
+- 자동으로 경비 목록에 추가
+- 실시간 세금 예상 금액 표시
+- 위험도 통계 확인
+
+### 5. 세금 계산 & 신고
+- "세금 계산하기" 버튼 클릭
+- 공제 가능액 / 예상 환급액 확인
+- 신고서 제출 또는 PDF 다운로드
+
+---
 
 ## 🛠️ 기술 스택
 
-### 백엔드
-- **Hono** - 경량 고성능 웹 프레임워크
-- **Cloudflare Workers** - 엣지 런타임
-- **TypeScript** - 타입 안정성
+### Backend
+- **Hono** - Lightweight Web Framework
+- **Cloudflare Workers** - Edge Runtime
+- **TypeScript** - Type Safety
 
-### 프론트엔드
-- **Vanilla JavaScript** - 순수 JS로 최적화
-- **Tailwind CSS** - 유틸리티 기반 CSS
-- **Font Awesome** - 아이콘
+### Frontend
+- **Vanilla JavaScript** - No Framework
+- **Tailwind CSS** (CDN) - Utility CSS
+- **Font Awesome** - Icon Library
+- **Pretendard, Roboto Mono** - Typography
 
-### 인프라
-- **Cloudflare Pages** - 정적 사이트 호스팅
-- **Wrangler** - 배포 도구
-- **PM2** - 프로세스 관리 (개발 환경)
+### Infrastructure
+- **Cloudflare Pages** - Static Hosting + Functions
+- **Wrangler** - Deployment CLI
+- **PM2** - Process Manager (개발 환경)
+- **Vite** - Build Tool
 
-## 📂 프로젝트 구조
+---
+
+## 📁 프로젝트 구조
 
 ```
 webapp/
 ├── src/
-│   └── index.tsx          # 메인 애플리케이션 (Hono 서버 + API)
+│   ├── index.tsx          # Hono 앱 + HTML 렌더링
+│   └── renderer.tsx       # (옵션)
 ├── public/
 │   └── static/
 │       ├── app.js         # 프론트엔드 로직
-│       └── style.css      # 커스텀 스타일
-├── dist/                  # 빌드 출력 (자동 생성)
+│       └── style.css      # 디자인 시스템
+├── dist/                  # 빌드 결과물
+│   ├── _worker.js         # Cloudflare Worker
+│   ├── _routes.json       # Routing
+│   └── static/            # 정적 파일
 ├── ecosystem.config.cjs   # PM2 설정
 ├── wrangler.jsonc         # Cloudflare 설정
-├── package.json           # 의존성 및 스크립트
-└── README.md              # 프로젝트 문서
+├── package.json           # Dependencies
+└── README.md
 ```
 
-## 🚀 주요 기능
+---
 
-### 1. 영수증 OCR 자동 인식
-- 날짜, 금액, 업체명, 부가세, 카테고리 자동 추출
-- 신뢰도 점수 표시
-- 오류 감지 시 수정 제안
+## 🔧 로컬 개발
 
-### 2. 경비 자동 분류
-- AI 기반 업종/금액/가맹점 패턴 분석
-- 업무용/개인용 자동 구분
-- 학습 기능으로 정확도 향상
-
-### 3. 세금 자동 계산
-- 총 경비 및 공제 가능액 계산
-- 예상 세금 및 환급액 실시간 표시
-- 과세/면세 자동 분류
-
-### 4. 다국어 FAQ 챗봇
-- 6개 언어 실시간 전환
-- 25개 핵심 질문/답변
-- 검색 기능 지원
-
-### 5. API 엔드포인트
-
-#### POST /api/ocr
-영수증 이미지 OCR 분석 (시뮬레이션)
-
-**요청**:
-```json
-{
-  "image": "data:image/jpeg;base64,..."
-}
-```
-
-**응답**:
-```json
-{
-  "success": true,
-  "data": {
-    "date": "2026-01-01",
-    "amount": 45000,
-    "vendor": "스타벅스 코리아",
-    "vat": 4500,
-    "category": "식비",
-    "confidence": 0.95
-  }
-}
-```
-
-#### POST /api/bank-capture ✨ NEW
-통장 거래내역 캡처 분석
-
-**요청**:
-```json
-{
-  "image": "data:image/jpeg;base64,..."
-}
-```
-
-**응답**:
-```json
-{
-  "success": true,
-  "data": {
-    "transactions": [
-      {
-        "date": "2026-01-01",
-        "merchant": "카페베네 강남점",
-        "amount": 15000,
-        "type": "withdraw",
-        "category": "식비",
-        "label": "사업추정",
-        "confidence": 0.88,
-        "risk_level": "low"
-      }
-    ],
-    "summary": {
-      "total": 3,
-      "business": 2,
-      "review_needed": 1
-    }
-  }
-}
-```
-
-#### POST /api/gallery-upload ✨ NEW
-갤러리 이미지 일괄 업로드
-
-**요청**:
-```json
-{
-  "images": [
-    "data:image/jpeg;base64,...",
-    "data:image/jpeg;base64,..."
-  ]
-}
-```
-
-**응답**:
-```json
-{
-  "success": true,
-  "data": {
-    "processed": [
-      {
-        "id": "img_1",
-        "source": "gallery",
-        "type": "receipt",
-        "data": {
-          "date": "2026-01-01",
-          "amount": 25000,
-          "vendor": "스타벅스",
-          "category": "식비",
-          "confidence": 0.85,
-          "risk_level": "low"
-        }
-      }
-    ],
-    "summary": {
-      "total": 10,
-      "receipts": 7,
-      "statements": 2,
-      "screenshots": 1
-    }
-  }
-}
-```
-
-#### POST /api/risk-analysis ✨ NEW
-경비 항목 위험도 분석
-
-**요청**:
-```json
-{
-  "expense": {
-    "amount": 200000,
-    "category": "기타",
-    "confidence": 0.65,
-    "currency": "USD"
-  }
-}
-```
-
-**응답**:
-```json
-{
-  "success": true,
-  "data": {
-    "riskScore": 70,
-    "riskLevel": "high",
-    "riskFactors": [
-      "고액 거래 (15만원 초과)",
-      "낮은 인식 신뢰도",
-      "불명확한 카테고리",
-      "해외 거래"
-    ],
-    "reviewRecommended": true,
-    "reviewCost": 1900,
-    "message": "전문가 검토를 권장합니다 (1,900원)"
-  }
-}
-```
-
-#### POST /api/spot-review ✨ NEW
-건당 전문가 리뷰 요청
-
-**요청**:
-```json
-{
-  "expense_id": "exp_123",
-  "user_note": "이 항목이 경비로 인정되나요?"
-}
-```
-
-**응답**:
-```json
-{
-  "success": true,
-  "data": {
-    "review_id": "review_1735718400000",
-    "status": "pending",
-    "estimated_time": "24시간 이내",
-    "cost": 1900,
-    "message": "전문가 검토가 요청되었습니다. 24시간 이내 답변 예정입니다."
-  }
-}
-```
-
-#### POST /api/calculate-tax
-세금 계산
-
-**요청**:
-```json
-{
-  "expenses": [
-    { 
-      "amount": 45000, 
-      "category": "식비",
-      "risk_level": "low"
-    }
-  ]
-}
-```
-
-**응답**:
-```json
-{
-  "success": true,
-  "data": {
-    "totalExpense": 45000,
-    "deductible": 36000,
-    "vat": 4500,
-    "estimatedTax": 5400,
-    "refundEstimate": 2250,
-    "riskStats": {
-      "high": 0,
-      "mid": 0,
-      "low": 1
-    }
-  }
-}
-```
-
-#### GET /api/faq/:lang
-다국어 FAQ 데이터 (ko/en/zh/ja/de/es)
-
-**응답**: 18개 FAQ 질문/답변 (프리랜서 맞춤 8개 추가)
-
-## 📝 데이터 모델
-
-### 영수증 데이터
-```typescript
-{
-  date: string;          // 날짜
-  amount: number;        // 금액
-  vendor: string;        // 업체명
-  vat: number;          // 부가세
-  category: string;     // 카테고리
-  confidence: number;   // 신뢰도 (0-1)
-}
-```
-
-### 세금 계산 결과
-```typescript
-{
-  totalExpense: number;     // 총 경비
-  deductible: number;       // 공제 가능액
-  vat: number;             // 부가세
-  estimatedTax: number;    // 예상 세금
-  refundEstimate: number;  // 환급 예상액
-}
-```
-
-## 💻 로컬 개발
-
-### 1. 의존성 설치
+### 설치
 ```bash
 npm install
 ```
 
-### 2. 개발 서버 실행
-```bash
-# Vite 개발 서버
-npm run dev
-
-# Wrangler 개발 서버 (PM2)
-npm run build
-pm2 start ecosystem.config.cjs
-```
-
-### 3. 빌드
+### 빌드
 ```bash
 npm run build
 ```
 
-### 4. 포트 정리
+### 개발 서버 시작 (Sandbox)
 ```bash
+# 포트 정리
 npm run clean-port
+
+# PM2로 시작
+pm2 start ecosystem.config.cjs
+
+# 상태 확인
+pm2 list
+pm2 logs webapp --nostream
 ```
 
-## 🌐 배포
+### 테스트
+```bash
+curl http://localhost:3000
+curl http://localhost:3000/api/faq/ko
+```
+
+---
+
+## 📤 배포
 
 ### Cloudflare Pages 배포
+
+**1. Cloudflare API 키 설정 (필수)**
 ```bash
-# 빌드 및 배포
+# 툴로 설정
+setup_cloudflare_api_key
+
+# 또는 수동 설정
+export CLOUDFLARE_API_TOKEN="your-token"
+```
+
+**2. 프로젝트 생성**
+```bash
+npx wrangler pages project create webapp \
+  --production-branch main \
+  --compatibility-date 2024-01-01
+```
+
+**3. 배포**
+```bash
 npm run deploy
-
-# 프로덕션 배포 (프로젝트명 지정)
-npm run deploy:prod
+# 또는
+npx wrangler pages deploy dist --project-name webapp
 ```
 
-### 배포 전 체크리스트
-- [ ] `npm run build` 성공 확인
-- [ ] 로컬 테스트 완료
-- [ ] 환경 변수 설정 확인
-- [ ] Git 커밋 완료
-
-## 🔧 설정
-
-### wrangler.jsonc
-```jsonc
-{
-  "name": "webapp",
-  "compatibility_date": "2026-01-01",
-  "pages_build_output_dir": "./dist",
-  "compatibility_flags": ["nodejs_compat"]
-}
+**4. 환경 변수 설정 (옵션)**
+```bash
+npx wrangler pages secret put API_KEY --project-name webapp
 ```
 
-### package.json 스크립트
-- `npm run dev` - Vite 개발 서버
-- `npm run dev:sandbox` - Wrangler 개발 서버 (샌드박스)
-- `npm run build` - 프로젝트 빌드
-- `npm run preview` - 빌드 미리보기
-- `npm run deploy` - Cloudflare Pages 배포
-- `npm run clean-port` - 포트 3000 정리
-- `npm test` - 서버 응답 테스트
+---
 
-## 📊 현재 구현 상태
+## 🎨 핵심 UI/UX 원칙
 
-### ✅ 완료된 기능
-- [x] Hono + Cloudflare Pages 프로젝트 설정
-- [x] 영수증 촬영 UI
-- [x] OCR 시뮬레이션 API
-- [x] **통장 캡처 OCR** ✨ NEW
-- [x] **갤러리 일괄 업로드 (최대 20장)** ✨ NEW
-- [x] **위험도 스코어링 시스템** ✨ NEW
-- [x] **건당 전문가 리뷰 (1,900원)** ✨ NEW
-- [x] **간편 모드 워크플로우 (3가지 방식)** ✨ NEW
-- [x] 경비 목록 관리
-- [x] 세금 계산 기능
-- [x] 다국어 FAQ 챗봇 (18개 질문, 6개 언어)
-- [x] 반응형 디자인
-- [x] PM2 프로세스 관리
-- [x] Git 버전 관리
+### 3-6 요소 제한
+- 한 화면에 최대 3~6개 정보만 표시
+- 선택지는 최대 3개 버튼 (업무/개인/검토)
 
-### 🚧 개발 예정
-- [ ] 실제 OCR API 연동 (Google Vision API / Tesseract)
-- [ ] 사용자 인증 시스템
-- [ ] 데이터베이스 연동 (Cloudflare D1)
-- [ ] 홈택스 XML 파일 생성
-- [ ] 실제 전문가 매칭 시스템 (현재는 시뮬레이션)
-- [ ] 이메일 알림 기능
-- [ ] 영수증 중복 감지 (해시 기반)
-- [ ] 환급 예상액 그래프
-- [ ] 업종별 자동 매핑 개선
-- [ ] 다국어 OCR (영어, 중국어, 일본어)
+### 안심형 메시지 톤
+- ✅ **좋은 예**: "사진만 있으면 시작할 수 있어요"
+- ❌ **나쁜 예**: "필수 정보를 입력하세요"
+
+### 숫자는 Mono 폰트
+- 금액, 계정번호 → Roboto Mono
+- 자동 콤마 처리 (`toLocaleString`)
+
+### 위험도 과도 표시 금지
+- 위험도는 최소한만 표시
+- 과도한 경고는 불안감 조성
+
+---
 
 ## 🌍 다국어 지원
 
-### 지원 언어
+현재 지원 언어:
 - 🇰🇷 한국어 (ko)
 - 🇺🇸 영어 (en)
 - 🇨🇳 중국어 (zh)
@@ -467,125 +321,98 @@ npm run deploy:prod
 - 🇩🇪 독일어 (de)
 - 🇪🇸 스페인어 (es)
 
-### FAQ 주제
-1. 플랫폼 소개
-2. 사용 방법
-3. OCR 인식 범위
-4. 자동 계산 기능
-5. 제출 방식
-6. 지원 세금 종류
-7. 환급액 표시
-8. 분류 정확도
-9. 중복 방지
-10. 수정 기능
-
-## 📱 사용자 가이드
-
-### 간편 모드 선택 (3가지 방식)
-
-#### 방법 1: 영수증 촬영 📸
-**언제 사용**: 정식 영수증이 있을 때
-1. "영수증 촬영" 버튼 클릭
-2. 영수증 사진 촬영 또는 선택
-3. "OCR 분석 시작" 클릭
-4. 결과 확인 후 "경비 목록에 추가"
-
-#### 방법 2: 통장 캡처 🏦 ✨ NEW
-**언제 사용**: 영수증이 없을 때 (현금 지출, 계좌 이체)
-1. "통장 캡처" 버튼 클릭
-2. 뱅킹앱 거래내역 화면 캡처
-3. "거래내역 분석 시작" 클릭
-4. 사업/개인 자동 분류 확인
-5. 필요한 항목만 체크하여 "선택 항목 경비에 추가"
-
-**💡 Tip**: 거래내역이 보이는 화면이면 OK! 여러 거래가 있어도 자동으로 분리됩니다.
-
-#### 방법 3: 갤러리 업로드 🖼️ ✨ NEW
-**언제 사용**: 사진첩에 영수증이 여러 장 있을 때
-1. "갤러리 업로드" 버튼 클릭
-2. 여러 사진 선택 (최대 20장)
-3. "일괄 분석 시작" 클릭
-4. 모든 결과 확인 후 "모두 경비에 추가"
-
-**💡 Tip**: 영수증, 스크린샷, 거래내역 등 다양한 형식을 한 번에 업로드 가능!
-
-### 세금 계산 및 제출
-1. 경비 목록에 항목 추가 (위 3가지 방법 중 선택)
-2. "세금 계산하기" 버튼 클릭
-3. 결과 확인:
-   - 💰 총 경비
-   - ✅ 공제 가능액
-   - 🧮 예상 세금
-   - 💵 환급 예상액
-   - ⚠️ 위험도 통계 (고/중/저)
-4. 고위험 항목은 "전문가 검토 요청" 클릭 (1,900원)
-
-### 위험도 게이지 이해하기 ⚠️
-
-#### 🟢 저위험 (안전)
-- 자동 처리 가능
-- 별도 검토 불필요
-- 예: 소액, 일반 가맹점, 높은 신뢰도
-
-#### 🟡 중위험 (주의)
-- 일반적으로 문제 없음
-- 금액이 크거나 패턴이 불명확한 경우
-- 필요시 검토 권장
-
-#### 🔴 고위험 (검토권장)
-- 전문가 검토 권장 (1,900원)
-- 고액 거래, 해외 거래, 불명확한 카테고리
-- 24시간 이내 답변
-
-### 챗봇 사용
-1. 우측 하단 챗봇 아이콘 클릭
-2. 언어 선택 (🇰🇷🇺🇸🇨🇳🇯🇵)
-3. 질문 클릭하여 답변 확인
-4. 검색 기능으로 원하는 질문 찾기
-
-**주요 질문**:
-- 영수증이 없어도 되나요? 💡
-- 갤러리 사진도 사용 가능한가요? 📸
-- 통장 캡처는 어떻게 하나요? 🏦
-- 위험도 게이지는 무엇인가요? ⚠️
-- 건당 전문가 리뷰는? 👨‍💼
-- 프리랜서도 사용 가능한가요? 💼
-
-## 🔐 보안
-
-### 현재 구현
-- CORS 설정
-- 입력 검증
-- 에러 핸들링
-
-### 추가 예정
-- JWT 인증
-- Rate limiting
-- 데이터 암호화
-- HTTPS 강제
-
-## 🐛 알려진 이슈
-
-현재 알려진 이슈는 없습니다.
-
-## 📞 문의 및 지원
-
-이슈나 문의사항은 GitHub Issues를 통해 남겨주세요.
-
-## 📄 라이선스
-
-MIT License
-
-## 🎯 다음 단계
-
-1. **GitHub 저장소 연동** (진행 중)
-2. **Cloudflare Pages 배포** (대기 중)
-3. **실제 OCR API 연동** (계획 중)
-4. **사용자 인증 구현** (계획 중)
+FAQ 챗봇에서 언어 선택 가능
 
 ---
 
-**최종 업데이트**: 2026-01-01  
-**개발 상태**: ✅ MVP 완료  
-**배포 상태**: 🚀 개발 서버 실행 중
+## 📈 향후 로드맵
 
+### v1.1 (현재 MVP)
+- ✅ 영수증 OCR
+- ✅ 통장 캡처
+- ✅ 갤러리 업로드
+- ✅ 위험도 스코어
+- ✅ Spot Review UI
+- ✅ 다국어 FAQ
+
+### v1.2 (다음 단계)
+- [ ] 실제 OCR API 연동 (Google Vision / Tesseract.js)
+- [ ] Cloudflare D1 데이터베이스 통합
+- [ ] 사용자 인증 (JWT / OAuth)
+- [ ] 홈택스 XML 자동 생성
+- [ ] Spot Review 결제 연동
+
+### v1.3 (확장)
+- [ ] 계좌/카드 1회 연동
+- [ ] 자동 거래내역 가져오기
+- [ ] 세무사 매칭 시스템
+- [ ] 다국가 신고 지원 (미국, 싱가포르, 중국)
+
+### v2.0 (Advanced)
+- [ ] 법인 세무 지원
+- [ ] 무역/수출입 모듈
+- [ ] AI 세무 컨설팅
+- [ ] 모바일 앱 출시
+
+---
+
+## 🤝 타겟 사용자
+
+1. **프리랜서** (1인 사업자)
+   - 정식 장부 없음
+   - 영수증 분실 많음
+   - 세무 지식 부족
+
+2. **인플루언서/셀러**
+   - 온라인 수입 발생
+   - 부업 형태
+   - 간단한 신고 필요
+
+3. **초소형 자영업자**
+   - 연매출 3천만~1억
+   - 세무사 비용 부담
+   - 간편한 솔루션 필요
+
+---
+
+## 💡 차별화 포인트
+
+| 기준 | 기존 서비스 | 세무신고 플랫폼 |
+|------|-----------|---------------|
+| 영수증 필수 | ✅ 필수 | ❌ 통장 캡처로 대체 |
+| 계좌 연동 | 필수 (매월 유지) | 불필요 |
+| 월 비용 | 9,900~29,000원 | 무료 (건당만 유료) |
+| 전문가 상담 | 월정액 포함 | 건당 1,900원 |
+| 오류 불안감 | 사용자 책임 | Undo 상시 가능 |
+| 초보자 진입 | 어려움 (용어 난해) | 쉬움 (3버튼 선택) |
+
+---
+
+## 📞 문의 및 지원
+
+- **GitHub**: (저장소 추가 예정)
+- **Email**: support@tax-platform.com
+- **FAQ 챗봇**: 우측 하단 아이콘 클릭
+
+---
+
+## 📜 라이선스
+
+MIT License
+
+---
+
+## 🎉 주요 성과
+
+- ✅ **디자인 시스템 완성** - 컬러/폰트/톤앤매너
+- ✅ **통장 캡처 기능** - 영수증 없이도 신고 가능
+- ✅ **Spot Review** - 세무업계 최초 건당 검토 모델
+- ✅ **3버튼 UX** - 초보자 친화적 인터페이스
+- ✅ **위험도 스코어** - AI 기반 자동 분석
+- ✅ **다국어 지원** - 글로벌 확장 준비
+
+---
+
+**마지막 업데이트**: 2026-01-01  
+**버전**: v1.1.0  
+**개발 상태**: ✅ MVP 완료, 배포 준비 중
