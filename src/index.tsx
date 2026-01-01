@@ -273,13 +273,14 @@ app.get('/api/faq/:lang', (c) => {
 app.get('/', (c) => {
   return c.html(`
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>세무신고 플랫폼 - 영수증 없어도 신고는 됩니다</title>
+    <title id="pageTitle">세무신고 플랫폼 - 영수증 없어도 신고는 됩니다</title>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <link href="/static/style.css" rel="stylesheet">
+    <script src="/static/i18n.js"></script>
 </head>
 <body>
     <!-- 네비게이션 -->
@@ -290,9 +291,54 @@ app.get('/', (c) => {
                 <span style="font-family: var(--font-headline); font-size: 24px; font-weight: 700; color: var(--midnight-navy);">세무신고 플랫폼</span>
             </div>
             <div style="display: flex; align-items: center; gap: 24px;">
-                <a href="#" style="color: var(--text-secondary); text-decoration: none; font-weight: 500;">공지</a>
-                <a href="#" style="color: var(--text-secondary); text-decoration: none; font-weight: 500;">로그인</a>
-                <button class="btn btn-primary">회원가입</button>
+                <!-- 언어 선택 드롭다운 -->
+                <div style="position: relative;">
+                    <button id="langDropdownBtn" onclick="toggleLangDropdown()" class="btn btn-ghost" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
+                        <i class="fas fa-globe"></i>
+                        <span id="currentLangText">한국어</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.75rem;"></i>
+                    </button>
+                    <div id="langDropdown" class="hidden" style="position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(13, 27, 42, 0.16); min-width: 200px; z-index: 100;">
+                        <div style="padding: 8px;">
+                            <button onclick="changeLang('ko')" class="lang-option" data-lang="ko" style="width: 100%; text-align: left; padding: 12px 16px; border: none; background: none; cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 12px; transition: all 0.2s;">
+                                <span style="font-size: 1.25rem;">🇰🇷</span>
+                                <span style="font-weight: 500;">한국어</span>
+                            </button>
+                            <button onclick="changeLang('en')" class="lang-option" data-lang="en" style="width: 100%; text-align: left; padding: 12px 16px; border: none; background: none; cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 12px; transition: all 0.2s;">
+                                <span style="font-size: 1.25rem;">🇺🇸</span>
+                                <span style="font-weight: 500;">English</span>
+                            </button>
+                            <button onclick="changeLang('zh-CN')" class="lang-option" data-lang="zh-CN" style="width: 100%; text-align: left; padding: 12px 16px; border: none; background: none; cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 12px; transition: all 0.2s;">
+                                <span style="font-size: 1.25rem;">🇨🇳</span>
+                                <span style="font-weight: 500;">简体中文</span>
+                            </button>
+                            <button onclick="changeLang('zh-TW')" class="lang-option" data-lang="zh-TW" style="width: 100%; text-align: left; padding: 12px 16px; border: none; background: none; cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 12px; transition: all 0.2s;">
+                                <span style="font-size: 1.25rem;">🇹🇼</span>
+                                <span style="font-weight: 500;">繁體中文</span>
+                            </button>
+                            <button onclick="changeLang('ja')" class="lang-option" data-lang="ja" style="width: 100%; text-align: left; padding: 12px 16px; border: none; background: none; cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 12px; transition: all 0.2s;">
+                                <span style="font-size: 1.25rem;">🇯🇵</span>
+                                <span style="font-weight: 500;">日本語</span>
+                            </button>
+                            <button onclick="changeLang('vi')" class="lang-option" data-lang="vi" style="width: 100%; text-align: left; padding: 12px 16px; border: none; background: none; cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 12px; transition: all 0.2s;">
+                                <span style="font-size: 1.25rem;">🇻🇳</span>
+                                <span style="font-weight: 500;">Tiếng Việt</span>
+                            </button>
+                            <button onclick="changeLang('es')" class="lang-option" data-lang="es" style="width: 100%; text-align: left; padding: 12px 16px; border: none; background: none; cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 12px; transition: all 0.2s;">
+                                <span style="font-size: 1.25rem;">🇪🇸</span>
+                                <span style="font-weight: 500;">Español</span>
+                            </button>
+                            <button onclick="changeLang('de')" class="lang-option" data-lang="de" style="width: 100%; text-align: left; padding: 12px 16px; border: none; background: none; cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 12px; transition: all 0.2s;">
+                                <span style="font-size: 1.25rem;">🇩🇪</span>
+                                <span style="font-weight: 500;">Deutsch</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <a href="#" id="navNotice" style="color: var(--text-secondary); text-decoration: none; font-weight: 500;">공지</a>
+                <a href="#" id="navLogin" style="color: var(--text-secondary); text-decoration: none; font-weight: 500;">로그인</a>
+                <button class="btn btn-primary" id="navSignup">회원가입</button>
             </div>
         </div>
     </nav>
@@ -548,27 +594,28 @@ app.get('/', (c) => {
     <div id="chatbotWindow" class="hidden">
         <div class="chatbot-header">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-robot" style="font-size: 20px;"></i>
+                <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-robot" style="font-size: 24px;"></i>
                 </div>
                 <div>
-                    <h3 style="font-size: 16px; margin-bottom: 2px;">세무 도우미</h3>
-                    <p style="font-size: 12px; opacity: 0.8;">온라인</p>
+                    <h3 style="margin-bottom: 4px;">FAQ 도우미</h3>
+                    <p style="font-size: 0.875rem; opacity: 0.9;">25개 질문 답변</p>
                 </div>
             </div>
-            <button id="closeChatbot" style="background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;">
+            <button id="closeChatbot" style="background: rgba(255,255,255,0.1); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; transition: all 0.2s;">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         
-        <div style="flex: 1; overflow-y: auto; padding: 16px; background: var(--soft-fog);">
-            <div style="margin-bottom: 16px;">
-                <input type="text" id="faqSearch" placeholder="궁금한 내용을 검색하세요..." style="width: 100%; padding: 12px; border: 2px solid var(--soft-fog); border-radius: var(--radius-full); font-family: var(--font-body);">
+        <div class="chatbot-body">
+            <div id="faqList">
+                <!-- FAQ 그리드가 여기에 동적으로 로드됩니다 -->
             </div>
-            <div id="faqItems"></div>
         </div>
     </div>
 
+    <script src="/static/i18n.js"></script>
+    <script src="/static/faq-data.js"></script>
     <script src="/static/app.js"></script>
 </body>
 </html>

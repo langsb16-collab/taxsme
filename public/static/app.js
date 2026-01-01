@@ -763,7 +763,11 @@ function displayTaxResult(data) {
   scrollToElement('taxResult');
 }
 
-// ==================== 챗봇 FAQ ====================
+// ==================== 챗봇 FAQ (다국어 지원) ====================
+
+let currentFaqView = 'grid'; // 'grid' or 'detail'
+let currentDetailFaq = null;
+let currentFaqPage = 0; // 9개씩 페이지 네이션
 
 // 챗봇 토글
 if (document.getElementById('chatbotIcon')) {
@@ -773,7 +777,7 @@ if (document.getElementById('chatbotIcon')) {
       chatbotWindow.classList.toggle('hidden');
       
       if (!chatbotWindow.classList.contains('hidden')) {
-        loadFAQ(currentLang);
+        loadFAQGrid(currentLang);
       }
     }
   });
@@ -788,67 +792,174 @@ if (document.getElementById('closeChatbot')) {
   });
 }
 
-// FAQ 로드
-async function loadFAQ(lang = 'ko') {
-  try {
-    const response = await fetch(`/api/faq/${lang}`);
-    const result = await response.json();
-    
-    if (result.success) {
-      faqData = result.data;
-      displayFAQ(faqData);
-    }
-  } catch (error) {
-    console.error('FAQ 로드 실패:', error);
-  }
-}
-
-// FAQ 표시
-function displayFAQ(faqs) {
+// FAQ 그리드 로드 (9개씩)
+function loadFAQGrid(lang = 'ko', page = 0) {
+  currentLang = lang;
+  currentFaqPage = page;
+  currentFaqView = 'grid';
+  
+  const faqs = window.faqTranslations[lang] || window.faqTranslations['ko'];
   const faqList = document.getElementById('faqList');
   if (!faqList) return;
   
-  faqList.innerHTML = faqs.map(faq => `
-    <div class="faq-item">
-      <div class="faq-question" onclick="toggleFAQ(${faq.id})">
-        <span>${faq.question}</span>
-        <i class="fas fa-chevron-down" id="faq-icon-${faq.id}"></i>
-      </div>
-      <div class="faq-answer hidden" id="faq-answer-${faq.id}">
-        ${faq.answer}
-      </div>
+  const startIdx = page * 9;
+  const endIdx = startIdx + 9;
+  const pageFaqs = faqs.slice(startIdx, endIdx);
+  const totalPages = Math.ceil(faqs.length / 9);
+  
+  faqList.innerHTML = `
+    <div class="faq-grid">
+      ${pageFaqs.map(faq => `
+        <div class="faq-card" onclick="showFaqDetail(${faq.id})">
+          <div class="faq-card-number">${faq.id}</div>
+          <div class="faq-card-title">${faq.question}</div>
+        </div>
+      `).join('')}
     </div>
-  `).join('');
+    
+    ${totalPages > 1 ? `
+      <div style="display: flex; justify-content: center; gap: 12px; margin-top: 16px;">
+        ${page > 0 ? `
+          <button class="btn btn-ghost" style="padding: 8px 16px;" onclick="loadFAQGrid('${lang}', ${page - 1})">
+            <i class="fas fa-chevron-left"></i>
+            이전
+          </button>
+        ` : ''}
+        
+        <div style="display: flex; align-items: center; gap: 8px; padding: 0 16px;">
+          <span style="color: var(--text-tertiary); font-size: 0.875rem;">
+            ${page + 1} / ${totalPages}
+          </span>
+        </div>
+        
+        ${page < totalPages - 1 ? `
+          <button class="btn btn-ghost" style="padding: 8px 16px;" onclick="loadFAQGrid('${lang}', ${page + 1})">
+            다음
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        ` : ''}
+      </div>
+    ` : ''}
+  `;
 }
 
-// FAQ 토글
-window.toggleFAQ = function(faqId) {
-  const answer = document.getElementById(`faq-answer-${faqId}`);
-  const icon = document.getElementById(`faq-icon-${faqId}`);
+// FAQ 상세 표시
+window.showFaqDetail = function(faqId) {
+  const faqs = window.faqTranslations[currentLang] || window.faqTranslations['ko'];
+  const faq = faqs.find(f => f.id === faqId);
   
-  if (answer && icon) {
-    answer.classList.toggle('hidden');
-    icon.style.transform = answer.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+  if (!faq) return;
+  
+  currentDetailFaq = faq;
+  currentFaqView = 'detail';
+  
+  const faqList = document.getElementById('faqList');
+  if (!faqList) return;
+  
+  faqList.innerHTML = `
+    <button class="faq-back-button" onclick="loadFAQGrid('${currentLang}', ${currentFaqPage})">
+      <i class="fas fa-arrow-left"></i>
+      목록으로 돌아가기
+    </button>
+    
+    <div class="faq-detail">
+      <div class="faq-detail-header">
+        <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+          <div class="faq-card-number" style="font-size: 2rem; margin: 0;">${faq.id}</div>
+          <div class="faq-detail-question">${faq.question}</div>
+        </div>
+        <button class="faq-detail-close" onclick="loadFAQGrid('${currentLang}', ${currentFaqPage})">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="faq-detail-answer">${faq.answer}</div>
+    </div>
+    
+    <!-- 이전/다음 FAQ -->
+    <div style="display: flex; gap: 12px; justify-content: space-between;">
+      ${faq.id > 1 ? `
+        <button class="btn btn-outline" style="flex: 1;" onclick="showFaqDetail(${faq.id - 1})">
+          <i class="fas fa-chevron-left"></i>
+          이전 질문
+        </button>
+      ` : '<div></div>'}
+      
+      ${faq.id < 25 ? `
+        <button class="btn btn-outline" style="flex: 1;" onclick="showFaqDetail(${faq.id + 1})">
+          다음 질문
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      ` : '<div></div>'}
+    </div>
+  `;
+};
+
+// 언어 드롭다운 토글
+window.toggleLangDropdown = function() {
+  const dropdown = document.getElementById('langDropdown');
+  if (dropdown) {
+    dropdown.classList.toggle('hidden');
   }
 };
 
-// FAQ 검색
-if (document.getElementById('faqSearch')) {
-  document.getElementById('faqSearch').addEventListener('input', function(e) {
-    const query = e.target.value.toLowerCase();
-    const filteredFAQs = faqData.filter(faq => 
-      faq.question.toLowerCase().includes(query) || 
-      faq.answer.toLowerCase().includes(query)
-    );
-    displayFAQ(filteredFAQs);
-  });
-}
+// 문서 클릭 시 드롭다운 닫기
+document.addEventListener('click', function(e) {
+  const dropdown = document.getElementById('langDropdown');
+  const btn = document.getElementById('langDropdownBtn');
+  
+  if (dropdown && btn && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+    dropdown.classList.add('hidden');
+  }
+});
 
-// 언어 변경
+// 언어 변경 (완전히 재작성)
 window.changeLang = function(lang) {
   currentLang = lang;
-  loadFAQ(lang);
-  showToast(`언어가 ${lang}로 변경되었습니다`);
+  
+  // 드롭다운 닫기
+  const dropdown = document.getElementById('langDropdown');
+  if (dropdown) {
+    dropdown.classList.add('hidden');
+  }
+  
+  // 현재 언어 텍스트 업데이트
+  const currentLangText = document.getElementById('currentLangText');
+  const langNames = {
+    'ko': '한국어',
+    'en': 'English',
+    'zh-CN': '简体中文',
+    'zh-TW': '繁體中文',
+    'ja': '日本語',
+    'vi': 'Tiếng Việt',
+    'es': 'Español',
+    'de': 'Deutsch'
+  };
+  
+  if (currentLangText) {
+    currentLangText.textContent = langNames[lang] || '한국어';
+  }
+  
+  // HTML lang 속성 변경
+  const htmlRoot = document.getElementById('htmlRoot');
+  if (htmlRoot) {
+    htmlRoot.setAttribute('lang', lang);
+  }
+  
+  // FAQ 그리드 다시 로드
+  if (currentFaqView === 'grid') {
+    loadFAQGrid(lang, currentFaqPage);
+  } else if (currentDetailFaq) {
+    showFaqDetail(currentDetailFaq.id);
+  }
+  
+  // 로컬스토리지에 저장
+  try {
+    localStorage.setItem('preferred_lang', lang);
+  } catch (e) {
+    console.warn('localStorage not available');
+  }
+  
+  showToast(`${langNames[lang]} 로 변경되었습니다`);
 };
 
 // ==================== 스크롤 헬퍼 ====================
@@ -860,12 +971,42 @@ window.scrollToSection = function(sectionId) {
 // ==================== 초기화 ====================
 
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('✅ 세무신고 플랫폼 초기화 완료');
+  console.log('✅ 세무신고 플랫폼 초기화 완료 (다국어 지원)');
   
-  // FAQ 초기 로드
-  loadFAQ('ko');
+  // 로컬스토리지에서 저장된 언어 불러오기
+  try {
+    const savedLang = localStorage.getItem('preferred_lang');
+    if (savedLang && window.faqTranslations[savedLang]) {
+      currentLang = savedLang;
+      // 언어 드롭다운 텍스트 업데이트
+      const currentLangText = document.getElementById('currentLangText');
+      const langNames = {
+        'ko': '한국어',
+        'en': 'English',
+        'zh-CN': '简体中文',
+        'zh-TW': '繁體中文',
+        'ja': '日本語',
+        'vi': 'Tiếng Việt',
+        'es': 'Español',
+        'de': 'Deutsch'
+      };
+      if (currentLangText) {
+        currentLangText.textContent = langNames[currentLang] || '한국어';
+      }
+    }
+  } catch (e) {
+    console.warn('localStorage not available');
+  }
+  
+  // FAQ 초기 로드 (9개 그리드 방식)
+  if (window.faqTranslations) {
+    loadFAQGrid(currentLang);
+  }
   
   // 경비 목록 초기화
   updateExpenseList();
   updateTaxSummary();
+  
+  console.log(`Current language: ${currentLang}`);
+  console.log(`FAQ data loaded: ${window.faqTranslations ? 'Yes' : 'No'}`);
 });
