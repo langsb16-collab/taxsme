@@ -38,6 +38,182 @@ app.post('/api/ocr', async (c) => {
   }
 })
 
+// API 엔드포인트 - 통장 캡처 OCR (신규)
+app.post('/api/bank-capture', async (c) => {
+  try {
+    const body = await c.req.json()
+    
+    // 시뮬레이션: 통장 내역 OCR
+    const mockTransactions = [
+      {
+        date: '2026-01-01',
+        merchant: '카페베네 강남점',
+        amount: 15000,
+        type: 'withdraw',
+        category: '식비',
+        label: '사업추정',
+        confidence: 0.88,
+        risk_level: 'low'
+      },
+      {
+        date: '2026-01-02',
+        merchant: '쿠팡 온라인결제',
+        amount: 32000,
+        type: 'withdraw',
+        category: '사무용품',
+        label: '사업추정',
+        confidence: 0.75,
+        risk_level: 'mid'
+      },
+      {
+        date: '2026-01-03',
+        merchant: '택시 결제',
+        amount: 8500,
+        type: 'withdraw',
+        category: '교통비',
+        label: '검토필요',
+        confidence: 0.65,
+        risk_level: 'mid'
+      }
+    ]
+    
+    await new Promise(resolve => setTimeout(resolve, 1200))
+    
+    return c.json({
+      success: true,
+      data: {
+        transactions: mockTransactions,
+        summary: {
+          total: mockTransactions.length,
+          business: mockTransactions.filter(t => t.label === '사업추정').length,
+          review_needed: mockTransactions.filter(t => t.label === '검토필요').length
+        }
+      },
+      message: '통장 내역 인식 완료'
+    })
+  } catch (error) {
+    return c.json({ success: false, message: '오류가 발생했습니다' }, 400)
+  }
+})
+
+// API 엔드포인트 - 갤러리 일괄 업로드 (신규)
+app.post('/api/gallery-upload', async (c) => {
+  try {
+    const body = await c.req.json()
+    const { images } = body
+    
+    // 시뮬레이션: 여러 이미지 일괄 처리
+    const mockResults = images.map((img: any, index: number) => ({
+      id: `img_${index + 1}`,
+      source: 'gallery',
+      type: index % 3 === 0 ? 'receipt' : index % 3 === 1 ? 'statement' : 'screenshot',
+      data: {
+        date: `2026-01-0${(index % 9) + 1}`,
+        amount: Math.floor(Math.random() * 100000) + 5000,
+        vendor: ['스타벅스', '쿠팡', '올리브영', '이마트', 'GS25'][index % 5],
+        category: ['식비', '사무용품', '통신비', '교통비', '소모품'][index % 5],
+        confidence: 0.7 + Math.random() * 0.25,
+        risk_level: index % 4 === 0 ? 'high' : index % 2 === 0 ? 'mid' : 'low'
+      }
+    }))
+    
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    
+    return c.json({
+      success: true,
+      data: {
+        processed: mockResults,
+        summary: {
+          total: mockResults.length,
+          receipts: mockResults.filter((r: any) => r.type === 'receipt').length,
+          statements: mockResults.filter((r: any) => r.type === 'statement').length,
+          screenshots: mockResults.filter((r: any) => r.type === 'screenshot').length
+        }
+      },
+      message: `${mockResults.length}개 이미지 처리 완료`
+    })
+  } catch (error) {
+    return c.json({ success: false, message: '오류가 발생했습니다' }, 400)
+  }
+})
+
+// API 엔드포인트 - 위험도 분석 (신규)
+app.post('/api/risk-analysis', async (c) => {
+  try {
+    const { expense } = await c.req.json()
+    
+    // 위험도 스코어링 로직
+    let riskScore = 0
+    let riskFactors = []
+    
+    // 금액 기준
+    if (expense.amount > 150000) {
+      riskScore += 30
+      riskFactors.push('고액 거래 (15만원 초과)')
+    }
+    
+    // 신뢰도 기준
+    if (expense.confidence < 0.7) {
+      riskScore += 25
+      riskFactors.push('낮은 인식 신뢰도')
+    }
+    
+    // 카테고리 기준
+    if (['기타', '미분류'].includes(expense.category)) {
+      riskScore += 20
+      riskFactors.push('불명확한 카테고리')
+    }
+    
+    // 해외 거래
+    if (expense.currency && expense.currency !== 'KRW') {
+      riskScore += 15
+      riskFactors.push('해외 거래')
+    }
+    
+    const riskLevel = riskScore >= 50 ? 'high' : riskScore >= 25 ? 'mid' : 'low'
+    const reviewRecommended = riskScore >= 40
+    
+    return c.json({
+      success: true,
+      data: {
+        riskScore,
+        riskLevel,
+        riskFactors,
+        reviewRecommended,
+        reviewCost: reviewRecommended ? 1900 : 0,
+        message: reviewRecommended 
+          ? '전문가 검토를 권장합니다 (1,900원)' 
+          : '자동 처리 가능합니다'
+      }
+    })
+  } catch (error) {
+    return c.json({ success: false, message: '분석 오류' }, 400)
+  }
+})
+
+// API 엔드포인트 - 건당 전문가 리뷰 요청 (신규)
+app.post('/api/spot-review', async (c) => {
+  try {
+    const { expense_id, user_note } = await c.req.json()
+    
+    // 시뮬레이션: 전문가 리뷰 요청
+    await new Promise(resolve => setTimeout(resolve, 800))
+    
+    return c.json({
+      success: true,
+      data: {
+        review_id: `review_${Date.now()}`,
+        status: 'pending',
+        estimated_time: '24시간 이내',
+        cost: 1900,
+        message: '전문가 검토가 요청되었습니다. 24시간 이내 답변 예정입니다.'
+      }
+    })
+  } catch (error) {
+    return c.json({ success: false, message: '요청 오류' }, 400)
+  }
+})
+
 // API 엔드포인트 - 세무 계산 시뮬레이션
 app.post('/api/calculate-tax', async (c) => {
   try {
@@ -49,6 +225,10 @@ app.post('/api/calculate-tax', async (c) => {
     const estimatedTax = Math.floor(deductible * 0.15)
     const refundEstimate = Math.floor(vat * 0.5)
     
+    // 위험도 통계
+    const highRisk = expenses.filter((e: any) => e.risk_level === 'high').length
+    const midRisk = expenses.filter((e: any) => e.risk_level === 'mid').length
+    
     return c.json({
       success: true,
       data: {
@@ -57,6 +237,11 @@ app.post('/api/calculate-tax', async (c) => {
         vat,
         estimatedTax,
         refundEstimate,
+        riskStats: {
+          high: highRisk,
+          mid: midRisk,
+          low: expenses.length - highRisk - midRisk
+        },
         summary: `총 경비: ${totalExpense.toLocaleString()}원 | 공제 가능: ${deductible.toLocaleString()}원 | 환급 예상: ${refundEstimate.toLocaleString()}원`
       }
     })
@@ -73,14 +258,22 @@ app.get('/api/faq/:lang', (c) => {
     ko: [
       { id: 1, question: '이 플랫폼은 어떤 서비스인가요?', answer: '영수증 촬영만으로 지출 인식 → 자동 분류 → 세액 계산 → 제출/파일 생성 → 대행까지 이어지는 자동 세무신고 시스템입니다.' },
       { id: 2, question: '진짜 영수증만 찍어도 되나요?', answer: '기본 신고는 가능합니다. 다만 복잡 신고(법인·수출입·다국적)일 경우 계좌/카드/홈택스/전문가 검토를 병행합니다.' },
-      { id: 3, question: 'OCR은 무엇을 인식하나요?', answer: '날짜·금액·사업자명·세율·항목·부가세를 자동 추출하며 오류 감지 시 보정 제안이 뜹니다.' },
-      { id: 4, question: '세무 계산은 자동인가요?', answer: '네. AI 엔진이 과세/면세/경비 인정 비율·환급 예상액을 자동 산출하고 신고 유형에 매핑합니다.' },
-      { id: 5, question: '홈택스로 자동 제출되나요?', answer: '자동 제출/파일 다운로드/전문가 대행 3가지 중 선택합니다. 홈택스 XML·CSV 출력도 지원합니다.' },
-      { id: 6, question: '어떤 세금이 지원되나요?', answer: '부가세, 종소세 단순 신고, 프리랜서·1인사업자 경비처리 중심이며, 법인·무역은 전문가 옵션이 활성화됩니다.' },
-      { id: 7, question: '예상 환급액도 보이나요?', answer: '영수증 누적 시 상단에 "예상 세금/환급 미터기"가 실시간으로 표시됩니다.' },
-      { id: 8, question: '자동 분류 정확도는 어느 정도인가요?', answer: '업종/금액/가맹점 패턴 기반 추천이며, 반복 사용 시 사용자/업종별로 정밀도가 개선됩니다.' },
-      { id: 9, question: '똑같은 영수증이 중복되면요?', answer: '중복 인식 방지 및 중복 경고가 자동 표시됩니다.' },
-      { id: 10, question: '실수하면 수정할 수 있나요?', answer: 'OCR 결과는 즉시 수정 가능하며, 수정 기록은 로그로 남아 증빙에 포함됩니다.' }
+      { id: 3, question: '영수증이 없어도 되나요? 💡', answer: '네! 통장 캡처나 갤러리 사진만으로도 경비 처리가 가능합니다. 통장 거래 내역을 촬영하면 자동으로 경비 후보로 분류됩니다.' },
+      { id: 4, question: '갤러리에 있는 사진도 사용할 수 있나요? 📸', answer: '가능합니다! 사진첩에 저장된 영수증, 스크린샷, 거래 내역 등을 한 번에 업로드하면 자동으로 분류합니다.' },
+      { id: 5, question: '통장 캡처는 어떻게 하나요? 🏦', answer: '뱅킹앱 거래 내역 화면을 캡처하여 업로드하면 날짜, 거래처, 금액을 자동으로 추출하여 경비로 등록합니다.' },
+      { id: 6, question: 'OCR은 무엇을 인식하나요?', answer: '날짜·금액·사업자명·세율·항목·부가세를 자동 추출하며 오류 감지 시 보정 제안이 뜹니다.' },
+      { id: 7, question: '세무 계산은 자동인가요?', answer: '네. AI 엔진이 과세/면세/경비 인정 비율·환급 예상액을 자동 산출하고 신고 유형에 매핑합니다.' },
+      { id: 8, question: '위험도 게이지는 무엇인가요? ⚠️', answer: '각 경비 항목의 세무 리스크를 자동 분석합니다. 고위험 항목은 전문가 검토를 권장하며, 건당 1,900원에 이용 가능합니다.' },
+      { id: 9, question: '건당 전문가 리뷰는 무엇인가요? 👨‍💼', answer: '애매한 항목만 골라서 세무사에게 검토 요청할 수 있습니다. 전체 대행이 아닌 필요한 부분만 1,900원에 확인받을 수 있습니다.' },
+      { id: 10, question: '프리랜서도 사용할 수 있나요? 💼', answer: '네! 오히려 프리랜서와 소규모 자영업자를 위해 설계되었습니다. 간편 모드로 복잡한 메뉴 없이 3번의 클릭으로 신고 준비가 완료됩니다.' },
+      { id: 11, question: '홈택스로 자동 제출되나요?', answer: '자동 제출/파일 다운로드/전문가 대행 3가지 중 선택합니다. 홈택스 XML·CSV 출력도 지원합니다.' },
+      { id: 12, question: '어떤 세금이 지원되나요?', answer: '부가세, 종소세 단순 신고, 프리랜서·1인사업자 경비처리 중심이며, 법인·무역은 전문가 옵션이 활성화됩니다.' },
+      { id: 13, question: '예상 환급액도 보이나요?', answer: '영수증 누적 시 상단에 "예상 세금/환급 미터기"가 실시간으로 표시됩니다.' },
+      { id: 14, question: '자동 분류 정확도는 어느 정도인가요?', answer: '업종/금액/가맹점 패턴 기반 추천이며, 반복 사용 시 사용자/업종별로 정밀도가 개선됩니다.' },
+      { id: 15, question: '똑같은 영수증이 중복되면요?', answer: '중복 인식 방지 및 중복 경고가 자동 표시됩니다.' },
+      { id: 16, question: '실수하면 수정할 수 있나요?', answer: 'OCR 결과는 즉시 수정 가능하며, 수정 기록은 로그로 남아 증빙에 포함됩니다.' },
+      { id: 17, question: '세무사 비용이 부담됩니다 💸', answer: '무료 자동신고(소규모), 건당 리뷰(1,900원), 전면 대행(월 정액) 중 선택 가능합니다. 필요한 만큼만 비용을 지불하세요.' },
+      { id: 18, question: '간편 모드는 무엇인가요? ⚡', answer: '복잡한 메뉴 없이 "갤러리 선택 → 1클릭 분류 → 자동 계산 → 제출" 4단계로 끝나는 초간단 워크플로우입니다.' }
     ],
     en: [
       { id: 1, question: 'What is this platform?', answer: 'An automated tax filing system: Receipt capture → Automatic classification → Tax calculation → Submission/File generation → Delegation.' },
@@ -201,8 +394,145 @@ app.get('/', (c) => {
                 </div>
             </div>
 
+            <!-- 프리랜서 전용 안내 배너 -->
+            <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl shadow-2xl p-6 md:p-8 mb-12 text-white">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex-1">
+                        <h3 class="text-2xl md:text-3xl font-bold mb-3">
+                            <i class="fas fa-lightbulb mr-2"></i>
+                            영수증 없어도 괜찮습니다!
+                        </h3>
+                        <p class="text-lg opacity-90 mb-2">
+                            ✅ 통장 캡처만으로 경비 처리 가능<br>
+                            ✅ 갤러리 사진 한 번에 업로드<br>
+                            ✅ 건당 1,900원 전문가 검토 (필요시만)
+                        </p>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <button onclick="document.getElementById('bankCaptureSection').scrollIntoView({behavior:'smooth'})" class="bg-white text-green-600 px-6 py-3 rounded-full font-bold hover:shadow-xl transition transform hover:scale-105">
+                            <i class="fas fa-university mr-2"></i>
+                            통장 캡처하기
+                        </button>
+                        <button onclick="document.getElementById('gallerySection').scrollIntoView({behavior:'smooth'})" class="bg-white text-green-600 px-6 py-3 rounded-full font-bold hover:shadow-xl transition transform hover:scale-105">
+                            <i class="fas fa-images mr-2"></i>
+                            갤러리 업로드
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 간편 모드 선택 -->
+            <div class="grid md:grid-cols-3 gap-6 mb-12">
+                <button onclick="switchMode('receipt')" class="mode-btn bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition text-center border-4 border-transparent hover:border-purple-600">
+                    <i class="fas fa-camera text-5xl text-purple-600 mb-3"></i>
+                    <h3 class="text-xl font-bold mb-2">영수증 촬영</h3>
+                    <p class="text-gray-600 text-sm">정식 영수증이 있을 때</p>
+                </button>
+                <button onclick="switchMode('bank')" class="mode-btn bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition text-center border-4 border-transparent hover:border-green-600">
+                    <i class="fas fa-university text-5xl text-green-600 mb-3"></i>
+                    <h3 class="text-xl font-bold mb-2">통장 캡처 💡</h3>
+                    <p class="text-gray-600 text-sm">영수증 없을 때</p>
+                </button>
+                <button onclick="switchMode('gallery')" class="mode-btn bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition text-center border-4 border-transparent hover:border-blue-600">
+                    <i class="fas fa-images text-5xl text-blue-600 mb-3"></i>
+                    <h3 class="text-xl font-bold mb-2">갤러리 업로드 📸</h3>
+                    <p class="text-gray-600 text-sm">사진첩에 있을 때</p>
+                </button>
+            </div>
+
+            <!-- 통장 캡처 섹션 (신규) -->
+            <div id="bankCaptureSection" class="hidden bg-white rounded-3xl shadow-2xl p-8 md:p-12 mb-12">
+                <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">
+                    <i class="fas fa-university text-green-600 mr-3"></i>
+                    통장 거래내역 캡처하기
+                </h2>
+                <p class="text-center text-gray-600 mb-8">뱅킹앱 거래내역 화면을 촬영하면 자동으로 경비로 분류합니다</p>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="border-4 border-dashed border-green-300 rounded-2xl p-8 flex flex-col items-center justify-center hover:border-green-600 transition bg-gradient-to-br from-green-50 to-emerald-50">
+                        <div class="w-full max-w-md text-center space-y-4">
+                            <i class="fas fa-mobile-alt text-6xl text-green-600 animate-bounce"></i>
+                            <p class="text-lg text-gray-700 font-semibold">통장 화면을 촬영하세요</p>
+                            <p class="text-sm text-gray-500">거래내역이 보이는 화면을 캡처</p>
+                            <input type="file" id="bankInput" accept="image/*" capture="environment" class="hidden">
+                            <button onclick="document.getElementById('bankInput').click()" class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-full hover:shadow-lg transition">
+                                <i class="fas fa-upload mr-2"></i>
+                                통장 사진 선택
+                            </button>
+                        </div>
+                        <div id="bankPreviewArea" class="hidden mt-4 w-full">
+                            <img id="bankPreviewImage" class="w-full rounded-lg shadow-md">
+                            <button id="analyzeBankBtn" class="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-full hover:shadow-lg transition">
+                                <i class="fas fa-magic mr-2"></i>
+                                거래내역 분석 시작
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="bankResults" class="hidden bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800">
+                            <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                            거래내역 인식 결과
+                        </h3>
+                        <div id="bankTransactions" class="space-y-3 max-h-96 overflow-y-auto">
+                            <!-- 동적으로 생성됨 -->
+                        </div>
+                        <button id="addBankExpensesBtn" class="w-full mt-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-full hover:shadow-lg transition">
+                            <i class="fas fa-plus-circle mr-2"></i>
+                            선택 항목 경비에 추가
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 갤러리 업로드 섹션 (신규) -->
+            <div id="gallerySection" class="hidden bg-white rounded-3xl shadow-2xl p-8 md:p-12 mb-12">
+                <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">
+                    <i class="fas fa-images text-blue-600 mr-3"></i>
+                    갤러리 사진 일괄 업로드
+                </h2>
+                <p class="text-center text-gray-600 mb-8">사진첩에 저장된 영수증, 스크린샷 등을 한 번에 업로드하세요</p>
+                
+                <div class="border-4 border-dashed border-blue-300 rounded-2xl p-8 hover:border-blue-600 transition bg-gradient-to-br from-blue-50 to-indigo-50 mb-6">
+                    <div class="text-center space-y-4">
+                        <i class="fas fa-cloud-upload-alt text-6xl text-blue-600 animate-bounce"></i>
+                        <p class="text-lg text-gray-700 font-semibold">여러 사진을 한 번에 선택하세요</p>
+                        <p class="text-sm text-gray-500">최대 20장까지 동시 업로드 가능</p>
+                        <input type="file" id="galleryInput" accept="image/*" multiple class="hidden">
+                        <button onclick="document.getElementById('galleryInput').click()" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-full hover:shadow-lg transition">
+                            <i class="fas fa-upload mr-2"></i>
+                            사진 선택 (여러 개 가능)
+                        </button>
+                        <div id="galleryFileCount" class="hidden text-sm text-blue-600 font-semibold"></div>
+                    </div>
+                </div>
+
+                <div id="galleryResults" class="hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-check-circle text-blue-600 mr-2"></i>
+                            인식 결과 (<span id="galleryCount">0</span>개)
+                        </h3>
+                        <button id="processGalleryBtn" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-full hover:shadow-lg transition">
+                            <i class="fas fa-magic mr-2"></i>
+                            일괄 분석 시작
+                        </button>
+                    </div>
+                    <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <!-- 동적으로 생성됨 -->
+                    </div>
+                    <div id="galleryProcessedResults" class="hidden space-y-3 max-h-96 overflow-y-auto bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6">
+                        <!-- 동적으로 생성됨 -->
+                    </div>
+                    <button id="addGalleryExpensesBtn" class="hidden w-full mt-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-full hover:shadow-lg transition">
+                        <i class="fas fa-plus-circle mr-2"></i>
+                        모두 경비에 추가
+                    </button>
+                </div>
+            </div>
+
             <!-- 영수증 촬영 섹션 -->
-            <div class="bg-white rounded-3xl shadow-2xl p-8 md:p-12 mb-12">
+            <div id="receiptSection" class="bg-white rounded-3xl shadow-2xl p-8 md:p-12 mb-12">
                 <h2 class="text-3xl font-bold text-center mb-8 text-gray-800">
                     <i class="fas fa-camera text-purple-600 mr-3"></i>
                     영수증 촬영하기
